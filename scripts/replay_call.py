@@ -1,7 +1,8 @@
-"""Replay run_hazard.episode('llm','stall_mid',500) with PROMPT_VER=4 and record the exact Ollama traffic + executed actions."""
+"""Replay run_hazard.episode('llm','stall_mid',500) with PROMPT_VER=4 and record the exact Ollama traffic + executed actions.
+    python scripts/replay_call.py out.json"""
 import os, sys, json
 os.environ["PROMPT_VER"] = "4"
-ROOT = "/media/zhang/990/roudabout/CE-llms-roundabout/ce_vlm_experiment"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT + "/scripts"); sys.path.insert(0, ROOT + "/src"); sys.path.insert(0, ROOT); os.chdir(ROOT)
 import run_hazard as R, coc_supervisor as C, hazards as H
 calls, steps, starts = [], [], []

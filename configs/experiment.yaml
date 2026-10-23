@@ -1,5 +1,5 @@
 # Frozen configuration (written before any comparative result was inspected)
-dt:
+dt:                       # on another machine: env CNNDT_ROOT=<.../uncertaintyDT/CNNDT_baseline> overrides both paths
   source_script: /media/zhang/990/roudabout/uncertaintyDT/CNNDT_baseline/HF-DT-testing_average_return.py
   checkpoint_dir: /media/zhang/990/roudabout/uncertaintyDT/CNNDT_baseline/output2
   device: cpu

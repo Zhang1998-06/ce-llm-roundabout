@@ -14,8 +14,13 @@ HIST_EXECUTED = os.environ.get('HIST_EXECUTED', '1') == '1'
 
 
 def load_cfg():
+    """CNNDT_ROOT=<path to uncertaintyDT/CNNDT_baseline> overrides the DT paths in the config (other machines)."""
     with open(os.path.join(ROOT, "configs", "experiment.yaml")) as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    if os.environ.get("CNNDT_ROOT"):
+        cfg["dt"]["source_script"] = os.path.join(os.environ["CNNDT_ROOT"], "HF-DT-testing_average_return.py")
+        cfg["dt"]["checkpoint_dir"] = os.path.join(os.environ["CNNDT_ROOT"], "output2")
+    return cfg
 
 
 def load_dt(cfg):

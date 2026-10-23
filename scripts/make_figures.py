@@ -5,14 +5,14 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.image import imread
 ACT = ["LANE_LEFT", "IDLE", "LANE_RIGHT", "FASTER", "SLOWER"]
-comp = pd.read_csv("results/comparison.csv"); st = json.load(open("results/raw/steps.json"))
-dd = pd.read_csv("results/raw/vlm_decisions.csv")
+comp = pd.read_csv("results/phase1_nominal/comparison.csv"); st = json.load(open("results/phase1_nominal/raw/steps.json"))
+dd = pd.read_csv("results/phase1_nominal/raw/vlm_decisions.csv")
 # Fig 1
 fig, ax = plt.subplots(1, 3, figsize=(10, 3.4))
 for a, (k, u) in zip(ax, [("Success Rate (%)", "%"), ("Collision Rate (%)", "%"), ("Average Speed (m/s)", "m/s")]):
     a.bar(["DT", "DT + VLM"], comp[k], color=["#1f77b4", "#e8a33d"]); a.set_title(k)
     for i, v in enumerate(comp[k]): a.text(i, v, f"{v:.1f}", ha="center", va="bottom")
-plt.tight_layout(); plt.savefig("results/figures/performance_comparison.png", dpi=150); plt.close()
+plt.tight_layout(); plt.savefig("results/phase1_nominal/figures/performance_comparison.png", dpi=150); plt.close()
 # Fig 2: trajectories of one seed
 seed = 0
 fig, ax = plt.subplots(figsize=(6, 6))
@@ -27,7 +27,7 @@ ax.scatter(*zip(*t0["others"]), c="gray", s=25, label="other vehicles (DT run, t
 th = np.linspace(0, 2 * np.pi, 200)
 for r in (20, 24): ax.plot(r * np.cos(th), r * np.sin(th), "k-", lw=0.6)
 ax.set_xlim(-45, 45); ax.set_ylim(60, -45); ax.set_aspect("equal"); ax.legend(fontsize=7); ax.set_title(f"Seed {seed}: ego trajectories (south→north entry)")
-plt.tight_layout(); plt.savefig("results/figures/trajectory_comparison.png", dpi=150); plt.close()
+plt.tight_layout(); plt.savefig("results/phase1_nominal/figures/trajectory_comparison.png", dpi=150); plt.close()
 # Fig 3: VLM example
 ex = dd[(dd.seed == 0) & (dd.bev.notna())].iloc[0]
 fig, ax = plt.subplots(1, 2, figsize=(10, 4.2), gridspec_kw={"width_ratios": [1.1, 1]})
@@ -35,7 +35,7 @@ ax[0].imshow(imread(ex.bev)); ax[0].axis("off")
 final = "SLOWER" if (ex.dt_action == "FASTER" and ex.mode_returned == "YIELD") else ex.dt_action
 txt = f"seed {ex.seed}, step {ex.t}\nDT proposed action: {ex.dt_action}\nVLM mode: {ex.mode_returned}\nFinal executed action: {final}\n\nVLM reason:\n{ex.reason}\n\nlatency {ex.latency_s:.2f} s"
 ax[1].text(0, 1, txt, va="top", wrap=True, fontsize=10); ax[1].axis("off")
-plt.tight_layout(); plt.savefig("results/figures/vlm_decision_example.png", dpi=150); plt.close()
+plt.tight_layout(); plt.savefig("results/phase1_nominal/figures/vlm_decision_example.png", dpi=150); plt.close()
 # diagnostics
 b1 = pd.DataFrame(st["B1"]); b0 = pd.DataFrame(st["B0"])
 stall = b1[(b1.speed < 1)].groupby("seed").t.min()

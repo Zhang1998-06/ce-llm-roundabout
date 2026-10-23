@@ -1,0 +1,14 @@
+# Python 3.8 (conda env "HF-DT"); versions used for all reported results
+torch==2.4.0
+transformers==4.46.3
+safetensors==0.4.5
+gymnasium==1.0.0a2
+numpy==1.24.3
+pandas==2.0.3
+requests==2.32.3
+pyyaml==6.0.1
+matplotlib==3.7.3
+pygame==2.5.2
+scipy==1.8.0
+# highway-env: the local fork in uncertaintyDT/CNNDT_baseline/highway_env (symlink it as ./highway_env), not the pip package
+# LLM server: Ollama (http://127.0.0.1:11434) with qwen3:4b-instruct-2507-q4_K_M and qwen3-vl:2b-instruct-q4_K_M

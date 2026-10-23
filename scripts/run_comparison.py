@@ -15,8 +15,8 @@ TAG = os.environ.get("TAG", "")                       # "" = v1 ; e.g. "v2_s100"
 if os.environ.get("PROMPT"): cfg["vlm"]["prompt"] = os.environ["PROMPT"]
 if os.environ.get("VLM_MODEL"): cfg["vlm"]["model"] = os.environ["VLM_MODEL"]
 seeds = [int(x) for x in os.environ["SEEDS"].split(",")] if os.environ.get("SEEDS") else cfg["seeds"]["eval"]
-RAW, FIG = "results/raw", "results/figures"
-OUT = f"results/{TAG}" if TAG else "results"
+RAW, FIG = "results/phase1_nominal/raw", "results/phase1_nominal/figures"
+OUT = f"results/phase1_nominal/{TAG}" if TAG else "results/phase1_nominal"
 os.makedirs(OUT + "/raw", exist_ok=True); RAW = OUT + "/raw"
 peak = [0]
 def poll():

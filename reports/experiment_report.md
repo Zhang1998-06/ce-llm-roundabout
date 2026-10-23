@@ -26,7 +26,7 @@ B0 is the unchanged DT. B1 uses the same checkpoint and code, plus an inference-
 - **B1 did not improve over B0; it was much worse.** The collision the DT had was avoided only because the ego never entered the roundabout.
 
 ## 4. Qualitative analysis / diagnosis
-- Example (`figures/vlm_decision_example.png`, seed 0, step 0): DT proposes FASTER, the VLM answers YIELD ("Circulating traffic presents a plausible entry conflict"), the action becomes SLOWER. Here traffic really is on the ring, so the call is defensible.
+- Example (`results/phase1_nominal/figures/vlm_decision_example.png`, seed 0, step 0): DT proposes FASTER, the VLM answers YIELD ("Circulating traffic presents a plausible entry conflict"), the action becomes SLOWER. Here traffic really is on the ring, so the call is defensible.
 - The failure is systematic, not a single bad call: the first override happens at step 0 in all 30 episodes (the ego starts at 8 m/s, SLOWER sets the target speed to 0), and the ego is below 1 m/s from step 3 on, stopped about 40 m from the roundabout centre (before the entry).
 - The 2B VLM answers YIELD every time, including 54 of 180 replies whose own reason says there is no conflict. Once stopped, the DT proposes FASTER again, the VLM keeps saying YIELD, and the ego never restarts. The prompt asks for "plausible" conflict, and the always-dense ring traffic in this environment makes that nearly always true.
 - Caveat: the all-YIELD behaviour is a property of this model, prompt and integration rule; I did not tune the prompt or rule after seeing results, as instructed. A second-order contributor is that the integration rule has no release condition.
