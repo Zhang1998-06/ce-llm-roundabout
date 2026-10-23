@@ -1,0 +1,1 @@
+1/100 {'method': 'vlm', 'scenario': 'nominal', 'seed': 203, 'success': 0, 'collision': 1, 'timeout': 0, 'avg_speed': 12.71927142183583, 'completion_time': nan, 'min_dist': 3.879002833646243, 'n_steps': 7, 'n_overrides': 1, 'n_calls': 7, 'mean_latency': 15.480343852724348, 'invalid': 6}

@@ -1,0 +1,121 @@
+seed,t,dt_action,mode_returned,valid,latency_s,reason,raw,bev,overrode_any
+0,4,IDLE,YIELD,True,0.6290392875671387,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",results/B_s0/bev/s0_t4.png,
+1,4,IDLE,YIELD,True,0.6295080184936523,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+2,3,IDLE,YIELD,True,1.1788413524627686,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+3,3,IDLE,YIELD,True,0.8571360111236572,Circulating vehicles on the roundabout ring present a potential entry conflict with ego,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating vehicles on the roundabout ring present a potential entry conflict with ego""
+}",,
+4,3,IDLE,YIELD,True,1.1664576530456543,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,
+5,4,FASTER,YIELD,True,1.12284517288208,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,True
+6,3,IDLE,YIELD,True,0.6092860698699951,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+7,4,IDLE,YIELD,True,0.9072074890136719,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,
+8,4,FASTER,YIELD,True,0.7422678470611572,Circulating traffic on the roundabout ring presents a potential entry conflict with the ego vehicle approaching.,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic on the roundabout ring presents a potential entry conflict with the ego vehicle approaching.""
+}",,True
+9,4,FASTER,YIELD,True,0.9303741455078125,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,True
+10,3,IDLE,YIELD,True,0.7682895660400391,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+11,3,IDLE,YIELD,True,0.9492487907409668,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+12,4,FASTER,YIELD,True,1.135845422744751,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,True
+13,3,IDLE,YIELD,True,0.6946735382080078,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+14,4,FASTER,YIELD,True,0.8002457618713379,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,True
+15,3,IDLE,YIELD,True,1.0470364093780518,Ego is approaching roundabout with circulating traffic presenting a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting a plausible entry conflict""
+}",,
+16,3,IDLE,YIELD,True,0.601081371307373,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+17,3,IDLE,YIELD,True,0.8561611175537109,Circulating vehicles on the roundabout ring present a potential entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating vehicles on the roundabout ring present a potential entry conflict""
+}",,
+18,3,IDLE,YIELD,True,0.8243260383605957,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+19,3,IDLE,YIELD,True,1.103158950805664,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+20,4,FASTER,YIELD,True,0.7197854518890381,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,True
+21,3,IDLE,YIELD,True,0.7072288990020752,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+22,4,IDLE,YIELD,True,1.0808296203613281,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,
+23,4,IDLE,YIELD,True,0.8117151260375977,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+24,3,IDLE,YIELD,True,1.1168231964111328,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,
+25,4,FASTER,YIELD,True,0.86529541015625,Circulating traffic presents a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Circulating traffic presents a plausible entry conflict""
+}",,True
+26,3,IDLE,YIELD,True,0.6466989517211914,Ego is approaching roundabout with circulating traffic presenting a plausible entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting a plausible entry conflict""
+}",,
+27,4,IDLE,YIELD,True,1.0394935607910156,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,
+28,3,IDLE,YIELD,True,0.9447011947631836,"Ego is approaching roundabout with circulating traffic, and there is a potential entry conflict.","{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic, and there is a potential entry conflict.""
+}",,
+29,4,FASTER,YIELD,True,1.182955026626587,Ego is approaching roundabout with circulating traffic presenting entry conflict,"{
+  ""mode"": ""YIELD"",
+  ""reason"": ""Ego is approaching roundabout with circulating traffic presenting entry conflict""
+}",,True

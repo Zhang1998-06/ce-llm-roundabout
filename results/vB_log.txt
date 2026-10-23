@@ -1,0 +1,88 @@
+B0 100 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 101 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.98879109231397, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 102 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 103 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 104 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 105 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 106 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 107 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 108 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.988791124432868, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 109 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 110 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 111 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897882867609212, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 112 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.988791124432868, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 113 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.98879109231397, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 114 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 115 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 116 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.988791124432868, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 117 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 118 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 119 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 120 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 121 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 122 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 123 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 124 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897882867609212, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 125 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 126 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 127 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 128 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 129 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B1 100 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 101 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.98879109231397, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 102 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 103 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 104 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 105 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 106 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 107 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 108 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897883842004667, 'n_vlm_calls': 1, 'n_overrides': 1}
+B1 109 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 110 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 111 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897882867609212, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 112 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.26151865806338, 'n_vlm_calls': 1, 'n_overrides': 1}
+B1 113 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.98879109231397, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 114 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 115 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 116 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897883842004667, 'n_vlm_calls': 1, 'n_overrides': 1}
+B1 117 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 118 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 119 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 120 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 121 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 122 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 123 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 124 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 13.897882867609212, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 125 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 126 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 127 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 128 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+B1 129 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 1, 'n_overrides': 0}
+<frozen importlib._bootstrap>:219: RuntimeWarning: Your system is avx2 capable but pygame was not built with support for it. The performance of some of your blits could be adversely affected. Consider enabling compile time detection with environment variables like PYGAME_DETECT_AVX2=1 if you are compiling without cross compilation.
+/home/zhang/anaconda3/envs/HF-DT/lib/python3.8/site-packages/gymnasium/utils/passive_env_checker.py:29: UserWarning: [33mWARN: It seems a Box observation space is an image but the `dtype` is not `np.uint8`, actual type: float32. If the Box observation space is not an image, we recommend flattening the observation to have only a 1D vector.[0m
+  logger.warn(
+/home/zhang/anaconda3/envs/HF-DT/lib/python3.8/site-packages/gymnasium/utils/passive_env_checker.py:34: UserWarning: [33mWARN: It seems a Box observation space is an image but the lower and upper bounds are not [0, 255]. Actual lower bound: -inf, upper bound: inf. Generally, CNN policies assume observations are within that range, so you may encounter an issue if the observation values are not.[0m
+  logger.warn(
+| Method | Success Rate (%) | Collision Rate (%) | Average Speed (m/s) | Completion Time (s) | Average Reward |
+|---|---:|---:|---:|---:|---:|
+| Original DT | 100.0 | 0.0 | 15.47 | 7.65 | 21.94 |
+| DT + VLM | 100.0 | 0.0 | 15.38 | 7.70 | 21.92 |
+                                         0          1
+Method                         Original DT   DT + VLM
+Episodes                                30         30
+Success Rate (%)                     100.0      100.0
+Collision Rate (%)                     0.0        0.0
+Average Speed (m/s)               15.47364   15.37667
+Completion Time (s)                   7.65        7.7
+Average Reward                   21.944444  21.922222
+Successes                               30         30
+Collisions                               0          0
+Timeouts                                 0          0
+VLM calls                                0         30
+Overrides                                0          3
+Override rate (% of calls)             0.0       10.0
+VLM JSON validity (%)                  NaN      100.0
+VLM mean latency (s)                   NaN   0.967969
+VLM YIELD share (%)                    NaN      100.0
+Peak GPU mem (MiB, whole GPU)          NaN     2872.0
+{'fail_to_success': 0, 'success_to_fail': 0, 'both_success': 30, 'both_fail': 0}

@@ -1,0 +1,3 @@
+Method,Episodes,Success Rate (%),Collision Rate (%),Average Speed (m/s),Completion Time (s),Average Reward,Successes,Collisions,Timeouts,VLM calls,Overrides,Override rate (% of calls),VLM JSON validity (%),VLM mean latency (s),VLM YIELD share (%),"Peak GPU mem (MiB, whole GPU)"
+Original DT,4,100.0,0.0,15.534245618741592,7.625,21.958333333333336,4,0,0,0,0,0.0,,,,
+DT + VLM,4,0.0,0.0,1.7259045326837459,,18.708333333333336,0,0,4,24,69,287.5,100.0,0.5315189361572266,91.66666666666666,2872.0

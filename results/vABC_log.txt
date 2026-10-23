@@ -1,0 +1,2 @@
+B0 100 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 15.716063783511167, 'n_vlm_calls': 0, 'n_overrides': 0}
+B0 101 {'success': 1, 'collision': 0, 'timeout': 0, 'avg_speed': 14.98879109231397, 'n_vlm_calls': 0, 'n_overrides': 0}

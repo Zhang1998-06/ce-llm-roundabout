@@ -1,0 +1,211 @@
+{
+ "episode": {
+  "method": "llm",
+  "scenario": "stall_mid",
+  "seed": 500,
+  "success": 1,
+  "collision": 0,
+  "timeout": 0,
+  "avg_speed": 15.716063783511167,
+  "completion_time": 7.0,
+  "min_dist": 3.3891618104863563,
+  "n_steps": 22,
+  "n_overrides": 1,
+  "n_calls": 3,
+  "mean_latency": 1.4266058603922527,
+  "invalid": 0
+ },
+ "decisions": [
+  {
+   "method": "llm",
+   "scenario": "stall_mid",
+   "seed": 500,
+   "t": 0,
+   "dt_action": "FASTER",
+   "meta_action": "BYPASS_OBSTACLE",
+   "valid": true,
+   "latency_s": 3.0234014987945557,
+   "scene": "EGO on south access, 8.0 m/s; entering outer ring lane in 24 m.",
+   "critical_objects": "vehicle 32 m ahead, 16.0 m/s; vehicle 52 m ahead, 0.0 m/s (STATIONARY)",
+   "causal_reasoning": "Policy would drive faster, but stationary vehicle blocks path; bypassing avoids collision.",
+   "abnormal_cause": "stationary vehicle 52 m ahead blocks path ahead"
+  },
+  {
+   "method": "llm",
+   "scenario": "stall_mid",
+   "seed": 500,
+   "t": 10,
+   "dt_action": "IDLE",
+   "meta_action": "FOLLOW_POLICY",
+   "valid": true,
+   "latency_s": 0.6804091930389404,
+   "scene": "EGO in ring inner lane, speed 16.0 m/s, policy wants IDLE",
+   "critical_objects": "vehicle 6 m ahead, speed 15.9 m/s; vehicle 33 m ahead, speed 15.9 m/s",
+   "causal_reasoning": "Normal traffic; policy keeps driving without obstruction.",
+   "abnormal_cause": "none"
+  },
+  {
+   "method": "llm",
+   "scenario": "stall_mid",
+   "seed": 500,
+   "t": 11,
+   "dt_action": "IDLE",
+   "meta_action": "FOLLOW_POLICY",
+   "valid": true,
+   "latency_s": 0.5760068893432617,
+   "scene": "EGO in outer ring lane, 16.0 m/s, policy wants IDLE",
+   "critical_objects": "vehicle 36 m ahead, speed 15.9 m/s",
+   "causal_reasoning": "Normal traffic, policy keeps driving",
+   "abnormal_cause": "none"
+  }
+ ],
+ "calls": [
+  {
+   "request": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "stream": false,
+    "format": "json",
+    "keep_alive": "60m",
+    "options": {
+     "temperature": 0,
+     "num_predict": 320,
+     "num_ctx": 4096
+    },
+    "messages": [
+     {
+      "role": "system",
+      "content": "You are the high-level reasoning module of a self-driving car (the EGO) in a two-lane roundabout.\nA learned low-level policy drives the car. It handles all normal traffic well: entering the ring, following,\nvehicles close beside it in the other lane. It was never trained on abnormal situations.\nYou override it ONLY when there is a concrete ABNORMAL CAUSE.\n\nROAD: the ego enters the ring on the OUTER lane and leaves at the north exit. The INNER lane is on the ego's left.\nBoth ring lanes lead to the exit. Normal ring traffic moves at 12-16 m/s.\n\nVEHICLE DYNAMICS (important): speed is set in three levels: 0, 8 and 16 m/s. Ring traffic drives 16 m/s, so a car\nthat slows down or stops on the ring is likely to be hit from behind. A lane change needs the car to be moving.\n\nWHAT COUNTS AS AN ABNORMAL CAUSE: something IN THE EGO'S PATH AHEAD (its own lane ahead, or the ring lane it is about to\nenter) that will block it or that it will hit: e.g. a stationary or broken-down vehicle, an obstacle, a vehicle far\nslower than traffic, a vehicle coming the wrong way.\nNOT a cause: normal moving traffic (even close), anything behind the ego, vehicles beside the ego in the other lane,\nstationary vehicles that are not in the ego's path.\n\nMANEUVERS (meta_action)\n- FOLLOW_POLICY: let the learned policy drive (default; required when abnormal_cause is \"none\").\n- BYPASS_OBSTACLE: start the bypass maneuver around the obstacle in the ego's path. It is executed automatically:\n  it keeps the car moving, changes to the free ring lane as soon as the gap is free (also right after entering the\n  ring), and returns control to the policy once the obstacle is behind. Choose it as soon as an obstacle is in the path,\n  even if the lane change is not possible yet.\n- SLOW_DOWN: reduce speed one level (never to a stop). Only for a cause that a lane change cannot solve.\n- KEEP_SPEED: hold the current speed.\n\nCHAIN OF CAUSATION \u2014 fill the JSON fields in order:\n1. scene: ego location and speed.\n2. critical_objects: the vehicle(s) in the ego's path ahead (gap, speed); copy numbers exactly from the input.\n3. abnormal_cause: \"none\", or the concrete cause in the ego's path (which vehicle, gap, why abnormal).\n4. causal_reasoning: if abnormal_cause is \"none\": \"normal traffic, the policy keeps driving\". Otherwise: what happens\n   if the policy keeps driving, and which maneuver removes the cause.\n5. meta_action: one of FOLLOW_POLICY, BYPASS_OBSTACLE, SLOW_DOWN, KEEP_SPEED.\n\nEXAMPLES\n- Path ahead: vehicle 20 m ahead, 15.8 m/s; a vehicle beside in the inner lane -> \"none\" -> FOLLOW_POLICY.\n- Path ahead clear; a stationary vehicle 15 m behind in the other lane -> \"none\" (not in my path) -> FOLLOW_POLICY.\n- Path ahead: STATIONARY vehicle 30 m ahead in my lane -> cause: it blocks my lane -> BYPASS_OBSTACLE.\n- Ego on the access road; the ring lane I enter has a STATIONARY vehicle 10 m after the entry -> cause: it blocks the\n  lane I will enter -> BYPASS_OBSTACLE.\n\nKeep each field under 25 words. Return only JSON:\n{\"scene\": \"...\", \"critical_objects\": \"...\", \"abnormal_cause\": \"...\", \"causal_reasoning\": \"...\", \"meta_action\": \"...\"}"
+     },
+     {
+      "role": "user",
+      "content": "EGO: south access road (before the ring), speed 8.0 m/s. Learned policy wants: FASTER.\nYou will enter the ring OUTER lane in 24 m.\nYOUR PATH AHEAD (access lane and the outer ring lane up to 40 m after the entry): vehicle 32 m ahead along your path, speed 16.0 m/s; vehicle 52 m ahead along your path, speed 0.0 m/s (STATIONARY)\nOTHER TRAFFIC (not in your path): 27 m away on ring inner lane, speed 15.9 m/s; 39 m away on ring inner lane, speed 15.9 m/s\n\nReason step by step in the JSON fields, then give meta_action."
+     }
+    ]
+   },
+   "response": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "created_at": "2026-10-23T20:13:07.304328226Z",
+    "message": {
+     "role": "assistant",
+     "content": "{\"scene\": \"EGO on south access, 8.0 m/s; entering outer ring lane in 24 m.\", \"critical_objects\": \"vehicle 32 m ahead, 16.0 m/s; vehicle 52 m ahead, 0.0 m/s (STATIONARY)\", \"abnormal_cause\": \"stationary vehicle 52 m ahead blocks path ahead\", \"causal_reasoning\": \"Policy would drive faster, but stationary vehicle blocks path; bypassing avoids collision.\", \"meta_action\": \"BYPASS_OBSTACLE\"}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 3021224000,
+    "load_duration": 2011599017,
+    "prompt_eval_count": 967,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 217088000,
+    "eval_count": 120,
+    "eval_duration": 785105000
+   }
+  },
+  {
+   "request": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "stream": false,
+    "format": "json",
+    "keep_alive": "60m",
+    "options": {
+     "temperature": 0,
+     "num_predict": 320,
+     "num_ctx": 4096
+    },
+    "messages": [
+     {
+      "role": "system",
+      "content": "You are the high-level reasoning module of a self-driving car (the EGO) in a two-lane roundabout.\nA learned low-level policy drives the car. It handles all normal traffic well: entering the ring, following,\nvehicles close beside it in the other lane. It was never trained on abnormal situations.\nYou override it ONLY when there is a concrete ABNORMAL CAUSE.\n\nROAD: the ego enters the ring on the OUTER lane and leaves at the north exit. The INNER lane is on the ego's left.\nBoth ring lanes lead to the exit. Normal ring traffic moves at 12-16 m/s.\n\nVEHICLE DYNAMICS (important): speed is set in three levels: 0, 8 and 16 m/s. Ring traffic drives 16 m/s, so a car\nthat slows down or stops on the ring is likely to be hit from behind. A lane change needs the car to be moving.\n\nWHAT COUNTS AS AN ABNORMAL CAUSE: something IN THE EGO'S PATH AHEAD (its own lane ahead, or the ring lane it is about to\nenter) that will block it or that it will hit: e.g. a stationary or broken-down vehicle, an obstacle, a vehicle far\nslower than traffic, a vehicle coming the wrong way.\nNOT a cause: normal moving traffic (even close), anything behind the ego, vehicles beside the ego in the other lane,\nstationary vehicles that are not in the ego's path.\n\nMANEUVERS (meta_action)\n- FOLLOW_POLICY: let the learned policy drive (default; required when abnormal_cause is \"none\").\n- BYPASS_OBSTACLE: start the bypass maneuver around the obstacle in the ego's path. It is executed automatically:\n  it keeps the car moving, changes to the free ring lane as soon as the gap is free (also right after entering the\n  ring), and returns control to the policy once the obstacle is behind. Choose it as soon as an obstacle is in the path,\n  even if the lane change is not possible yet.\n- SLOW_DOWN: reduce speed one level (never to a stop). Only for a cause that a lane change cannot solve.\n- KEEP_SPEED: hold the current speed.\n\nCHAIN OF CAUSATION \u2014 fill the JSON fields in order:\n1. scene: ego location and speed.\n2. critical_objects: the vehicle(s) in the ego's path ahead (gap, speed); copy numbers exactly from the input.\n3. abnormal_cause: \"none\", or the concrete cause in the ego's path (which vehicle, gap, why abnormal).\n4. causal_reasoning: if abnormal_cause is \"none\": \"normal traffic, the policy keeps driving\". Otherwise: what happens\n   if the policy keeps driving, and which maneuver removes the cause.\n5. meta_action: one of FOLLOW_POLICY, BYPASS_OBSTACLE, SLOW_DOWN, KEEP_SPEED.\n\nEXAMPLES\n- Path ahead: vehicle 20 m ahead, 15.8 m/s; a vehicle beside in the inner lane -> \"none\" -> FOLLOW_POLICY.\n- Path ahead clear; a stationary vehicle 15 m behind in the other lane -> \"none\" (not in my path) -> FOLLOW_POLICY.\n- Path ahead: STATIONARY vehicle 30 m ahead in my lane -> cause: it blocks my lane -> BYPASS_OBSTACLE.\n- Ego on the access road; the ring lane I enter has a STATIONARY vehicle 10 m after the entry -> cause: it blocks the\n  lane I will enter -> BYPASS_OBSTACLE.\n\nKeep each field under 25 words. Return only JSON:\n{\"scene\": \"...\", \"critical_objects\": \"...\", \"abnormal_cause\": \"...\", \"causal_reasoning\": \"...\", \"meta_action\": \"...\"}"
+     },
+     {
+      "role": "user",
+      "content": "EGO: ring inner lane, speed 16.0 m/s. Learned policy wants: IDLE.\nYOUR PATH AHEAD (your ring lane): vehicle 6 m ahead, speed 15.9 m/s; vehicle 33 m ahead, speed 15.9 m/s\nOTHER TRAFFIC (not in your path): 17 m away on ring outer lane, speed 0.0 m/s (STATIONARY); 18 m away on other road, speed 0.3 m/s (STATIONARY); 22 m away on ring inner lane, speed 11.5 m/s; 25 m away on ring outer lane, speed 8.4 m/s\n\nReason step by step in the JSON fields, then give meta_action."
+     }
+    ]
+   },
+   "response": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "created_at": "2026-10-23T20:13:08.550961461Z",
+    "message": {
+     "role": "assistant",
+     "content": "{\"scene\": \"EGO in ring inner lane, speed 16.0 m/s, policy wants IDLE\", \"critical_objects\": \"vehicle 6 m ahead, speed 15.9 m/s; vehicle 33 m ahead, speed 15.9 m/s\", \"abnormal_cause\": \"none\", \"causal_reasoning\": \"Normal traffic; policy keeps driving without obstruction.\", \"meta_action\": \"FOLLOW_POLICY\"}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 678709578,
+    "load_duration": 554276,
+    "prompt_eval_count": 970,
+    "prompt_eval_cached_count": 801,
+    "prompt_eval_duration": 38935000,
+    "eval_count": 96,
+    "eval_duration": 632090000
+   }
+  },
+  {
+   "request": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "stream": false,
+    "format": "json",
+    "keep_alive": "60m",
+    "options": {
+     "temperature": 0,
+     "num_predict": 320,
+     "num_ctx": 4096
+    },
+    "messages": [
+     {
+      "role": "system",
+      "content": "You are the high-level reasoning module of a self-driving car (the EGO) in a two-lane roundabout.\nA learned low-level policy drives the car. It handles all normal traffic well: entering the ring, following,\nvehicles close beside it in the other lane. It was never trained on abnormal situations.\nYou override it ONLY when there is a concrete ABNORMAL CAUSE.\n\nROAD: the ego enters the ring on the OUTER lane and leaves at the north exit. The INNER lane is on the ego's left.\nBoth ring lanes lead to the exit. Normal ring traffic moves at 12-16 m/s.\n\nVEHICLE DYNAMICS (important): speed is set in three levels: 0, 8 and 16 m/s. Ring traffic drives 16 m/s, so a car\nthat slows down or stops on the ring is likely to be hit from behind. A lane change needs the car to be moving.\n\nWHAT COUNTS AS AN ABNORMAL CAUSE: something IN THE EGO'S PATH AHEAD (its own lane ahead, or the ring lane it is about to\nenter) that will block it or that it will hit: e.g. a stationary or broken-down vehicle, an obstacle, a vehicle far\nslower than traffic, a vehicle coming the wrong way.\nNOT a cause: normal moving traffic (even close), anything behind the ego, vehicles beside the ego in the other lane,\nstationary vehicles that are not in the ego's path.\n\nMANEUVERS (meta_action)\n- FOLLOW_POLICY: let the learned policy drive (default; required when abnormal_cause is \"none\").\n- BYPASS_OBSTACLE: start the bypass maneuver around the obstacle in the ego's path. It is executed automatically:\n  it keeps the car moving, changes to the free ring lane as soon as the gap is free (also right after entering the\n  ring), and returns control to the policy once the obstacle is behind. Choose it as soon as an obstacle is in the path,\n  even if the lane change is not possible yet.\n- SLOW_DOWN: reduce speed one level (never to a stop). Only for a cause that a lane change cannot solve.\n- KEEP_SPEED: hold the current speed.\n\nCHAIN OF CAUSATION \u2014 fill the JSON fields in order:\n1. scene: ego location and speed.\n2. critical_objects: the vehicle(s) in the ego's path ahead (gap, speed); copy numbers exactly from the input.\n3. abnormal_cause: \"none\", or the concrete cause in the ego's path (which vehicle, gap, why abnormal).\n4. causal_reasoning: if abnormal_cause is \"none\": \"normal traffic, the policy keeps driving\". Otherwise: what happens\n   if the policy keeps driving, and which maneuver removes the cause.\n5. meta_action: one of FOLLOW_POLICY, BYPASS_OBSTACLE, SLOW_DOWN, KEEP_SPEED.\n\nEXAMPLES\n- Path ahead: vehicle 20 m ahead, 15.8 m/s; a vehicle beside in the inner lane -> \"none\" -> FOLLOW_POLICY.\n- Path ahead clear; a stationary vehicle 15 m behind in the other lane -> \"none\" (not in my path) -> FOLLOW_POLICY.\n- Path ahead: STATIONARY vehicle 30 m ahead in my lane -> cause: it blocks my lane -> BYPASS_OBSTACLE.\n- Ego on the access road; the ring lane I enter has a STATIONARY vehicle 10 m after the entry -> cause: it blocks the\n  lane I will enter -> BYPASS_OBSTACLE.\n\nKeep each field under 25 words. Return only JSON:\n{\"scene\": \"...\", \"critical_objects\": \"...\", \"abnormal_cause\": \"...\", \"causal_reasoning\": \"...\", \"meta_action\": \"...\"}"
+     },
+     {
+      "role": "user",
+      "content": "EGO: ring outer lane, speed 16.0 m/s. Learned policy wants: IDLE.\nYOUR PATH AHEAD (your ring lane): vehicle 36 m ahead, speed 15.9 m/s\nOTHER TRAFFIC (not in your path): 7 m away on ring inner lane, speed 15.9 m/s; 24 m away on ring outer lane, speed 0.0 m/s (STATIONARY); 25 m away on ring inner lane, speed 11.9 m/s; 25 m away on other road, speed 0.2 m/s (STATIONARY)\n\nReason step by step in the JSON fields, then give meta_action."
+     }
+    ]
+   },
+   "response": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "created_at": "2026-10-23T20:13:09.176239079Z",
+    "message": {
+     "role": "assistant",
+     "content": "{\"scene\": \"EGO in outer ring lane, 16.0 m/s, policy wants IDLE\", \"critical_objects\": \"vehicle 36 m ahead, speed 15.9 m/s\", \"abnormal_cause\": \"none\", \"causal_reasoning\": \"Normal traffic, policy keeps driving\", \"meta_action\": \"FOLLOW_POLICY\"}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 574397157,
+    "load_duration": 528756,
+    "prompt_eval_count": 955,
+    "prompt_eval_cached_count": 802,
+    "prompt_eval_duration": 35622000,
+    "eval_count": 78,
+    "eval_duration": 531965000
+   }
+  }
+ ],
+ "executed": [
+  3,
+  1,
+  1,
+  1,
+  1,
+  1,
+  0,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1
+ ],
+ "skill_start_t": [
+  0
+ ]
+}

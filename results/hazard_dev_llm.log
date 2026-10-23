@@ -1,0 +1,2 @@
+1/100 {'method': 'llm', 'scenario': 'nominal', 'seed': 200, 'success': 0, 'collision': 1, 'timeout': 0, 'avg_speed': 14.770926442316897, 'completion_time': nan, 'min_dist': 5.109498766537442, 'n_steps': 5, 'n_overrides': 1, 'n_calls': 5, 'mean_latency': 4.18497314453125, 'invalid': 0}
+21/100 {'method': 'llm', 'scenario': 'nominal', 'seed': 222, 'success': 0, 'collision': 1, 'timeout': 0, 'avg_speed': 9.534607372932587, 'completion_time': nan, 'min_dist': 5.289766766861524, 'n_steps': 6, 'n_overrides': 2, 'n_calls': 6, 'mean_latency': 5.354713360468547, 'invalid': 0}

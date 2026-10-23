@@ -1,0 +1,5 @@
+scenario,method,n,success,collision,timeout,speed,time,min_dist,overrides,calls,latency,invalid
+nominal,llm,25,92.0,8.0,0.0,14.861,7.739,6.645,0.0,12.8,2.298,0
+stall_entry,llm,25,0.0,88.0,12.0,7.769,,5.327,2.72,8.8,3.111,0
+stall_exit,llm,25,40.0,52.0,8.0,11.639,7.35,4.734,3.4,10.44,2.626,0
+stall_mid,llm,25,32.0,56.0,12.0,10.774,7.312,4.696,4.32,10.68,2.938,0

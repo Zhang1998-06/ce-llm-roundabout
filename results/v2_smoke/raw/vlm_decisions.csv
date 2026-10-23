@@ -1,0 +1,25 @@
+seed,t,dt_action,mode_returned,valid,latency_s,reason,raw,bev,overrode_any
+1000,0,FASTER,YIELD,True,0.5520889759063721,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",results/v2_smoke/bev/s1000_t0.png,True
+1000,4,IDLE,YIELD,True,0.5516507625579834,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",results/v2_smoke/bev/s1000_t4.png,True
+1000,8,FASTER,YIELD,True,0.5860702991485596,"Ring vehicle 10 m ahead, 12 m/s, will reach entry with ego","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle 10 m ahead, 12 m/s, will reach entry with ego""}",results/v2_smoke/bev/s1000_t8.png,True
+1000,12,FASTER,YIELD,True,0.5336446762084961,"Ring vehicle close to entry, ego before entry","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego before entry""}",results/v2_smoke/bev/s1000_t12.png,True
+1000,16,FASTER,YIELD,True,0.5251893997192383,"Ring vehicle close to entry, ego before entry","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego before entry""}",results/v2_smoke/bev/s1000_t16.png,True
+1000,20,FASTER,YIELD,True,0.525475263595581,"Ring vehicle close to entry, ego before entry","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego before entry""}",results/v2_smoke/bev/s1000_t20.png,True
+1001,0,FASTER,YIELD,True,0.5344030857086182,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1001,4,SLOWER,YIELD,True,0.5497913360595703,"Ring vehicle close to entry, ego before entry","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego before entry""}",,True
+1001,8,FASTER,YIELD,True,0.5407705307006836,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1001,12,FASTER,YIELD,True,0.5331907272338867,"Ring vehicle close to entry, ego at 30 m","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego at 30 m""}",,True
+1001,16,FASTER,YIELD,True,0.5325262546539307,"Ring vehicle close to entry, ego before entry","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego before entry""}",,True
+1001,20,FASTER,NORMAL,True,0.524052619934082,"Ego is at entry, no ring vehicles close enough to yield","{""mode"": ""NORMAL"", ""reason"": ""Ego is at entry, no ring vehicles close enough to yield""}",,
+1002,0,FASTER,YIELD,True,0.5296099185943604,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",,True
+1002,4,IDLE,YIELD,True,0.5444662570953369,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1002,8,FASTER,YIELD,True,0.5262465476989746,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1002,12,FASTER,YIELD,True,0.5236883163452148,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",,True
+1002,16,FASTER,YIELD,True,0.5182690620422363,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",,True
+1002,20,FASTER,YIELD,True,0.5099353790283203,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",,True
+1003,0,FASTER,YIELD,True,0.5085375308990479,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1003,4,IDLE,YIELD,True,0.5317516326904297,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1003,8,FASTER,YIELD,True,0.5191745758056641,"Ring vehicle close to entry, ego ahead","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego ahead""}",,True
+1003,12,FASTER,YIELD,True,0.5268797874450684,"Ring vehicle close to entry, ego at 30 m","{""mode"": ""YIELD"", ""reason"": ""Ring vehicle close to entry, ego at 30 m""}",,True
+1003,16,FASTER,YIELD,True,0.5298213958740234,Ring vehicle will reach entry with ego,"{""mode"": ""YIELD"", ""reason"": ""Ring vehicle will reach entry with ego""}",,True
+1003,20,FASTER,NORMAL,True,0.4992201328277588,Ring vehicle far from entry,"{""mode"": ""NORMAL"", ""reason"": ""Ring vehicle far from entry""}",,

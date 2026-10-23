@@ -1,0 +1,6 @@
+# symlink to the local highway-env fork (lives in uncertaintyDT/CNNDT_baseline/highway_env, see README)
+highway_env
+__pycache__/
+*.pyc
+*_v1_backup.py
+*_partial.csv
