@@ -262,3 +262,17 @@ crash diagnosis of v2 (likely rear-end by followers when braking, or hitting the
   `oracle` (true hazard + the prompt-v5 maneuver rule = perfect recognition reference); `llm` (Qwen3-4B, PROMPT_VER=5,
   executor v3). SKILL_V=3, S0=10, T_GAP=1, LAG_COMP=1, ENTRY_HOLD=1, CORRIDOR=1. Metrics: success, collision,
   at-fault collision, timeout, speed, completion time, min distance, calls, latency.
+
+## Phase 4 final test results (seeds 500–549, 50 per scenario, protocol above)
+Hazard mean success / collision / at-fault / timeout %:
+- DT 0 / 100 / 100 / 0; acc (no LLM) 0 / 55 / 39 / 45; oracle 45.7 / 9.7 / 9.0 / 44.7;
+- **LLM v5 45.0 / 9.7 / 9.0 / 45.3**; previous LLM v4 62.3 / 37.7 / – / 0.
+- Per scenario (LLM v5): stall 0/0/0/100, 68/18/18/14, 66/0/0/34; slow 68/30/30/2, 68/6/4/26, 0/4/2/96;
+  nominal 100 % (0 overrides). 1681 calls, 100 % valid JSON, 1.66 s mean latency.
+- LLM ≈ oracle in every scenario (largest gap: stall_exit 66 vs 70 %) → recognition / maneuver choice is no longer the
+  bottleneck; the remaining collisions are executor / traffic (IDM blind spot) limited.
+- 20 s horizon sensitivity (DT + oracle only, same seeds): oracle hazard mean 56 / 13 / 12 / 31; slow_exit 52 % success,
+  stall_exit 78 %; stall_entry still 98 % timeout (true deadlock); collisions rise slightly with longer exposure.
+- Trade-off vs v4: collisions 37.7 → 9.7 %, success 62.3 → 45.0 % (stall_entry waits at the entry; the margins cost time).
+- Next steps if continued: a smarter entry for stall_entry (enter in the inner lane directly); fix the IDM blind spot
+  in a separate sensitivity study (would change the traffic model, so all baselines must be rerun); VLM with prompt v5.

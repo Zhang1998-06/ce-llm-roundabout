@@ -1,11 +1,248 @@
 # CE 实验报告:LLM/VLM 链式因果推理 + Decision Transformer 处理 roundabout 长尾危险
 
+> **当前主结果是第 0 节(第二版 v5,安全优先)。** 第 1–9 节是第一版 v4,保留作对比。
+
 日期:2026-10-23 · 代码目录:`/media/zhang/990/roudabout/CE-llms-roundabout/ce_vlm_experiment`
 完整迭代记录(每一次尝试、诊断和数据):`reports/iteration_log.md`
 
 ---
 
-## 1. 任务与结论
+## 0. 第二版 v5:安全优先(当前主结果,2026-10-23)
+
+第一版(下面第 1–9 节,保留作对比)在 6 个危险场景平均成功率 62.3%,但**碰撞率仍有 37.7%**,说服力不够。第二版的目标是在
+LLM 仍然决定"何时、做什么机动"的前提下,把碰撞降下来。完整过程见 `reports/iteration_log.md` 的 Phase 4。
+
+### 0.1 结论(测试 seed 500–549,每个场景 50 个回合,开发阶段从未使用)
+
+| 方法(6 个危险场景平均) | 成功 % | 碰撞 % | 自车有责碰撞 % | 超时 % |
+|---|---:|---:|---:|---:|
+| DT(原始基线) | 0.0 | 100.0 | 100.0 | 0.0 |
+| DT + 同样的纵向安全层,不用 LLM(对照) | 0.0 | 55.0 | 39.0 | 45.0 |
+| 第一版 DT + LLM v4(执行器 v1) | 62.3 | 37.7 | – | 0.0 |
+| **第二版 DT + LLM v5(执行器 v3)** | **45.0** | **9.7** | **9.0** | 45.3 |
+| 完美识别 + 同样的机动(参考上限) | 45.7 | 9.7 | 9.0 | 44.7 |
+
+- **安全:** 碰撞率从 DT 的 100% 降到 **9.7%**,比第一版的 37.7% 降低约 3/4。抛锚车·入口 / 出口前、慢速车·出口三个场景的碰撞率是 0 / 0 / 4%。
+- **正常交通:** 100% 成功,0 次误介入,和 DT 完全一样。
+- **LLM 的作用:** 不用 LLM、只加同样的纵向安全层,成功率是 0%。安全层只能让车停下或慢下来,不能完成任务。LLM v5 的结果和"完美识别"参考几乎完全一样(45.0 vs 45.7),说明识别和机动选择(绕行 / 跟随)基本没有错误。
+- **代价:** 成功率从第一版的 62.3% 降到 45.0%。失败的回合变成了超时(停下或跟随,不撞车)。主要原因有三个:
+  - 抛锚车·入口改为在入口等待,碰撞 44% → 0%,但成功 56% → 0%。
+  - 平缓刹车加大了安全余量,抛锚车·出口前和慢速车·环中有 26–34% 的回合在 11 s 内没走完。
+  - 20 s 回合的敏感性分析(见 0.4 节的表):慢速车·出口的跟随在 20 s 内有 52% 能走完(11 s 时是 0%),抛锚车·出口前达到 78%(11 s 时 70%)。
+    但碰撞率也有所上升:慢速车·出口 4 → 10%,慢速车·环中 6 → 20%,因为车在交通里停留的时间更长了;20 s 下危险场景平均是 56% 成功、13% 碰撞。
+    这说明相当一部分超时是 11 s 时限造成的;但抛锚车·入口在 20 s 下仍然是 98% 超时,是真正的死锁。
+
+### 0.2 改了什么(都由诊断驱动)
+
+1. **两个模拟器事实(从源码确认):**
+   - `SLOWER` 按**当前车速**降档,12 m/s 时会直接把目标速度设成 0,相当于急刹到停。
+   - IDM 交通车找前车时只看**当前车道分段**(环上每段只有 17–20 m),看不见刚过分段点的停车或慢车,会直接追尾。
+   所以在这个模拟器里,任何需要在环上减速的控制器都做不到零碰撞,于是新增了"自车有责碰撞"指标(nuPlan 风格)。
+   被追尾、且自车在本车道内、不在汇入区时,判为自车无责;总碰撞率照常报告。
+2. **执行器 v3(`SmoothBypassSkill` / `FollowSkill`,`src/hazards.py`):**
+   - 执行器直接设定目标速度(发送 IDLE),按需要的减速度平缓刹车,停车余量 10 m + 1 s 时距。
+   - LLM 指定的异常车始终算作前车。
+   - 换道时目标车道的前后间隙随速度差变化。
+   - 越过障碍 8 m 后结束;在出口路上也继续生效。
+   - 静止障碍就在汇入点后 25 m 以内时,在入口等待。
+3. **prompt v5(`SYSTEM_V5` / `describe_v5`):**
+   - 机动从 4 个减到 3 个:FOLLOW_POLICY / BYPASS_OBSTACLE / **FOLLOW_VEHICLE**。去掉了 VLM 曾滥用的 SLOW_DOWN 和 KEEP_SPEED。
+   - LLM 需要做一个**因果判断**:慢车正在驶入单车道出口时,自车不可能超到它前面,只能跟随;静止车停在出口区时,可以绕过去再出口。
+   - 感知给出地图区域和预测动作这类事实标签("entering the single-lane exit ahead of you" / "stopped in the exit zone"),不给出决策。
+   - 离线单步准确率:第一稿用数字距离只有 69%,最终版 96.6%。
+
+### 0.3 系统 prompt v5(原文,`src/coc_supervisor.py: SYSTEM_V5`)
+
+```
+You are the high-level reasoning module of a self-driving car (the EGO) in a two-lane roundabout.
+A learned low-level policy drives the car. It handles all normal traffic well: entering the ring, following,
+vehicles close beside it in the other lane. It was never trained on abnormal situations.
+You override it ONLY when there is a concrete ABNORMAL CAUSE.
+
+ROAD: the ego enters the ring on the OUTER lane and must leave at the north exit. The INNER lane is on the ego's left.
+Normal ring traffic moves at 12-16 m/s. The NORTH EXIT ROAD IS A SINGLE LANE: every car that leaves there, including
+the ego, must pass through it one after another.
+
+WHAT COUNTS AS AN ABNORMAL CAUSE: something IN THE EGO'S PATH AHEAD (its own lane ahead, the ring lane it is about to
+enter, or the exit road it will take) that will block it or that it will hit: e.g. a stationary or broken-down vehicle,
+an obstacle, a vehicle far slower than traffic, a vehicle coming the wrong way.
+NOT a cause: normal moving traffic (even close), anything behind the ego, vehicles beside the ego in the other lane,
+stationary vehicles that are not in the ego's path.
+
+MANEUVERS (meta_action). Both maneuvers are executed automatically and brake smoothly when needed.
+- FOLLOW_POLICY: let the learned policy drive (default; required when abnormal_cause is "none").
+- BYPASS_OBSTACLE: THE DEFAULT MANEUVER for an abnormal vehicle in your path. Passes it in the other ring lane: the car
+  keeps moving, changes lane as soon as the gap is free, and returns control to the policy once the obstacle is behind.
+  Also for a vehicle "stopped in the exit zone": it does not move, so you pass it and still take the exit.
+- FOLLOW_VEHICLE: stay behind the abnormal vehicle at a safe distance (slow down, stop if needed), no lane change.
+  ONLY when the abnormal vehicle is "entering the single-lane exit ahead of you" or "on the single-lane exit road":
+  it will be in the single exit lane before you, so you can never get in front of it; passing it is impossible.
+A vehicle entering the exit at normal speed (12-16 m/s) is NORMAL traffic -> "none".
+
+CHAIN OF CAUSATION — fill the JSON fields in order:
+1. scene: ego location, speed, distance to the exit.
+2. critical_objects: the vehicle(s) in the ego's path ahead (gap, speed, label); copy numbers exactly.
+3. abnormal_cause: "none", or the concrete cause in the ego's path (which vehicle, gap, why abnormal).
+4. causal_reasoning: if abnormal_cause is "none": "normal traffic, the policy keeps driving". Otherwise: what happens
+   if the policy keeps driving; can the vehicle be passed before the exit; which maneuver removes the cause.
+5. meta_action: one of FOLLOW_POLICY, BYPASS_OBSTACLE, FOLLOW_VEHICLE.
+
+EXAMPLES
+- Path ahead: vehicle 20 m ahead, 15.8 m/s; a vehicle beside in the inner lane -> "none" -> FOLLOW_POLICY.
+- Path ahead clear; a stationary vehicle 15 m behind in the other lane -> "none" (not in my path) -> FOLLOW_POLICY.
+- Path ahead: STATIONARY vehicle 30 m ahead in my lane -> cause: it blocks my lane -> BYPASS_OBSTACLE.
+- Ego on the access road; the ring lane I enter has a STATIONARY vehicle 10 m after the entry -> cause: it blocks the
+  lane I will enter -> BYPASS_OBSTACLE.
+- Path ahead: STATIONARY vehicle 25 m ahead, stopped in the exit zone -> cause: it blocks my lane; it does not move, so
+  I can pass it and still exit -> BYPASS_OBSTACLE.
+- Path ahead: vehicle 30 m ahead at 3.0 m/s (no exit label) -> cause: crawling vehicle in my lane, still on the ring;
+  I can pass it -> BYPASS_OBSTACLE.
+- Path ahead: vehicle 25 m ahead at 15.2 m/s, entering the single-lane exit ahead of you -> "none" (normal speed) ->
+  FOLLOW_POLICY.
+- Path ahead: vehicle 18 m ahead at 3.0 m/s, entering the single-lane exit ahead of you -> cause: crawling vehicle
+  entering the single exit lane before me; I can never get in front of it -> FOLLOW_VEHICLE.
+- Path ahead: vehicle 37 m ahead at 12.5 m/s, entering the single-lane exit ahead of you; vehicle 46 m ahead at 3.0 m/s,
+  entering the single-lane exit ahead of you -> cause: the 3.0 m/s vehicle is crawling into the single exit lane (the
+  12.5 m/s one is normal); I can never get in front of it -> FOLLOW_VEHICLE.
+
+Keep each field under 25 words. Return only JSON:
+{"scene": "...", "critical_objects": "...", "abnormal_cause": "...", "causal_reasoning": "...", "meta_action": "..."}
+```
+
+每次调用的 user message = `describe_v5(env, DT 动作)` + `"\n\nReason step by step in the JSON fields, then give meta_action."`。
+调用参数:`qwen3:4b-instruct-2507-q4_K_M`,temperature 0,format json,num_predict 320,num_ctx 4096。
+测试集共 1681 次调用,JSON 100% 有效,平均延迟 1.66 s(3 个进程并发)。
+
+### 0.4 结果表(测试 seed 500–549)
+
+### Test seeds 500–549 (50 episodes per scenario and method), horizon 11 s
+
+| Scenario | Method | Success % | Collision % | At-fault collision % | Timeout % | Min dist (m) | Avg speed (m/s) | Completion time (s) | LLM calls/ep | Latency (s/call) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| nominal | DT (baseline) | 100.0 | 0.0 | 0.0 | 0.0 | 7.11 | 15.43 | 7.68 | – | – |
+| nominal | DT + same longitudinal safety, no LLM (control) | 94.0 | 0.0 | 0.0 | 6.0 | 6.67 | 14.17 | 8.05 | – | – |
+| nominal | Perfect recognition + same maneuvers (reference) | 100.0 | 0.0 | 0.0 | 0.0 | 7.11 | 15.43 | 7.68 | – | – |
+| nominal | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 100.0 | 0.0 | 0.0 | 0.0 | 7.11 | 15.43 | 7.68 | 13.4 | 1.80 |
+| nominal | DT + LLM-CoC v4 (previous version, executor v1) | 100.0 | 0.0 | – | 0.0 | 7.11 | 15.43 | 7.68 | 13.4 | 2.70 |
+| stall_entry | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 4.88 | 13.64 | – | – | – |
+| stall_entry | DT + same longitudinal safety, no LLM (control) | 0.0 | 100.0 | 100.0 | 0.0 | 4.26 | 5.93 | – | – | – |
+| stall_entry | Perfect recognition + same maneuvers (reference) | 0.0 | 0.0 | 0.0 | 100.0 | 5.16 | 2.46 | – | – | – |
+| stall_entry | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 0.0 | 0.0 | 0.0 | 100.0 | 5.16 | 2.46 | – | 1.0 | 1.17 |
+| stall_entry | DT + LLM-CoC v4 (previous version, executor v1) | 56.0 | 44.0 | – | 0.0 | 4.49 | 14.17 | 7.00 | 3.8 | 2.74 |
+| stall_mid | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 4.95 | 14.07 | – | – | – |
+| stall_mid | DT + same longitudinal safety, no LLM (control) | 0.0 | 72.0 | 28.0 | 28.0 | 4.58 | 7.60 | – | – | – |
+| stall_mid | Perfect recognition + same maneuvers (reference) | 68.0 | 18.0 | 18.0 | 14.0 | 4.52 | 12.32 | 7.78 | – | – |
+| stall_mid | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 68.0 | 18.0 | 18.0 | 14.0 | 4.52 | 12.32 | 7.78 | 2.4 | 1.68 |
+| stall_mid | DT + LLM-CoC v4 (previous version, executor v1) | 70.0 | 30.0 | – | 0.0 | 4.73 | 14.80 | 7.14 | 2.8 | 2.95 |
+| stall_exit | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 5.02 | 14.57 | – | – | – |
+| stall_exit | DT + same longitudinal safety, no LLM (control) | 0.0 | 14.0 | 6.0 | 86.0 | 4.26 | 6.22 | – | – | – |
+| stall_exit | Perfect recognition + same maneuvers (reference) | 70.0 | 0.0 | 0.0 | 30.0 | 4.67 | 12.30 | 7.49 | – | – |
+| stall_exit | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 66.0 | 0.0 | 0.0 | 34.0 | 4.64 | 11.98 | 7.44 | 5.5 | 1.93 |
+| stall_exit | DT + LLM-CoC v4 (previous version, executor v1) | 94.0 | 6.0 | – | 0.0 | 4.75 | 14.89 | 7.49 | 6.2 | 3.00 |
+| slow_entry | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 5.01 | 13.51 | – | – | – |
+| slow_entry | DT + same longitudinal safety, no LLM (control) | 0.0 | 92.0 | 70.0 | 8.0 | 4.38 | 5.66 | – | – | – |
+| slow_entry | Perfect recognition + same maneuvers (reference) | 68.0 | 30.0 | 30.0 | 2.0 | 4.27 | 13.29 | 7.97 | – | – |
+| slow_entry | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 68.0 | 30.0 | 30.0 | 2.0 | 4.27 | 13.29 | 7.97 | 3.1 | 1.71 |
+| slow_entry | DT + LLM-CoC v4 (previous version, executor v1) | 68.0 | 32.0 | – | 0.0 | 4.28 | 14.61 | 7.07 | 3.0 | 2.69 |
+| slow_mid | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 5.10 | 14.50 | – | – | – |
+| slow_mid | DT + same longitudinal safety, no LLM (control) | 0.0 | 42.0 | 22.0 | 58.0 | 4.47 | 7.40 | – | – | – |
+| slow_mid | Perfect recognition + same maneuvers (reference) | 68.0 | 6.0 | 4.0 | 26.0 | 4.56 | 11.99 | 7.69 | – | – |
+| slow_mid | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 68.0 | 6.0 | 4.0 | 26.0 | 4.56 | 11.99 | 7.69 | 1.9 | 1.60 |
+| slow_mid | DT + LLM-CoC v4 (previous version, executor v1) | 86.0 | 14.0 | – | 0.0 | 4.81 | 14.78 | 7.47 | 2.5 | 2.86 |
+| slow_exit | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 4.98 | 14.81 | – | – | – |
+| slow_exit | DT + same longitudinal safety, no LLM (control) | 0.0 | 10.0 | 8.0 | 90.0 | 4.33 | 7.55 | – | – | – |
+| slow_exit | Perfect recognition + same maneuvers (reference) | 0.0 | 4.0 | 2.0 | 96.0 | 4.13 | 7.31 | – | – | – |
+| slow_exit | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 0.0 | 4.0 | 2.0 | 96.0 | 4.13 | 7.31 | – | 6.4 | 1.89 |
+| slow_exit | DT + LLM-CoC v4 (previous version, executor v1) | 0.0 | 100.0 | – | 0.0 | 4.14 | 14.59 | – | 6.5 | 3.03 |
+| hazard mean | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 | 4.99 | 14.18 | – | – | – |
+| hazard mean | DT + same longitudinal safety, no LLM (control) | 0.0 | 55.0 | 39.0 | 45.0 | 4.38 | 6.73 | – | – | – |
+| hazard mean | Perfect recognition + same maneuvers (reference) | 45.7 | 9.7 | 9.0 | 44.7 | 4.55 | 9.95 | 7.73 | – | – |
+| hazard mean | **DT + LLM-CoC v5 (Qwen3-4B, text)** | 45.0 | 9.7 | 9.0 | 45.3 | 4.55 | 9.89 | 7.72 | 3.4 | 1.66 |
+| hazard mean | DT + LLM-CoC v4 (previous version, executor v1) | 62.3 | 37.7 | – | 0.0 | 4.53 | 14.64 | 7.23 | 4.1 | 2.88 |
+
+At-fault: the ego is not at fault only when hit from behind while keeping its lane outside the merge zone (nuPlan-style); not computed for the v4 run. Completion time: successful episodes only.
+
+### Sensitivity: 20 s horizon (protocol is 11 s), DT and the perfect-recognition reference, same seeds
+
+| Scenario | Method | Success % | Collision % | At-fault % | Timeout % |
+|---|---|---:|---:|---:|---:|
+| nominal | DT (baseline) | 94.0 | 6.0 | 6.0 | 0.0 |
+| nominal | Perfect recognition + same maneuvers (reference) | 94.0 | 6.0 | 6.0 | 0.0 |
+| stall_entry | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| stall_entry | Perfect recognition + same maneuvers (reference) | 2.0 | 0.0 | 0.0 | 98.0 |
+| stall_mid | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| stall_mid | Perfect recognition + same maneuvers (reference) | 68.0 | 18.0 | 18.0 | 14.0 |
+| stall_exit | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| stall_exit | Perfect recognition + same maneuvers (reference) | 78.0 | 0.0 | 0.0 | 22.0 |
+| slow_entry | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| slow_entry | Perfect recognition + same maneuvers (reference) | 68.0 | 30.0 | 30.0 | 2.0 |
+| slow_mid | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| slow_mid | Perfect recognition + same maneuvers (reference) | 68.0 | 20.0 | 18.0 | 12.0 |
+| slow_exit | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| slow_exit | Perfect recognition + same maneuvers (reference) | 52.0 | 10.0 | 6.0 | 38.0 |
+| hazard mean | DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| hazard mean | Perfect recognition + same maneuvers (reference) | 56.0 | 13.0 | 12.0 | 31.0 |
+
+
+### 0.5 真实调用示例(测试集,日志原文,不是回放)
+
+**stall_mid, seed 501, t = 0**(原始日志 `results/hazard_test_v5/decisions_llm.csv`;DT 建议 FASTER,执行 FASTER,启动执行器:是;回合结局:成功)
+
+user message:
+```
+EGO: south access road (before the ring), speed 8.0 m/s. Learned policy wants: FASTER.
+Your exit (north exit road, single lane) starts 80 m ahead along your path.
+You will enter the ring OUTER lane in 24 m.
+YOUR PATH AHEAD (access lane and the outer ring lane up to 40 m after the entry): vehicle 31 m ahead along your path, speed 16.1 m/s; vehicle 52 m ahead along your path, speed 0.0 m/s (STATIONARY)
+OTHER TRAFFIC (not in your path): 26 m away on ring inner lane, speed 16.0 m/s
+```
+模型原始输出:
+```json
+{"scene": "Ego on south access, 8.0 m/s; exit 80 m ahead; enter ring outer lane in 24 m; path ahead: vehicle 31m at 16.1 m/s, 52m at 0.0 m/s (stationary).", "critical_objects": "vehicle 52 m ahead, speed 0.0 m/s (stationary) in my path", "abnormal_cause": "stationary vehicle 52 m ahead in my path blocks lane", "causal_reasoning": "Policy would hit stationary vehicle; can pass in outer lane; bypass removes cause.", "meta_action": "BYPASS_OBSTACLE"}
+```
+
+**slow_exit, seed 500, t = 5**(原始日志 `results/hazard_test_v5/decisions_llm.csv`;DT 建议 IDLE,执行 IDLE,启动执行器:是;回合结局:超时(无碰撞))
+
+user message:
+```
+EGO: ring outer lane, speed 15.9 m/s. Learned policy wants: IDLE.
+Your exit (north exit road, single lane) starts 49 m ahead along your path.
+YOUR PATH AHEAD (your ring lane, then the exit road): vehicle 38 m ahead, speed 12.4 m/s, entering the single-lane exit ahead of you; vehicle 46 m ahead, speed 3.0 m/s, entering the single-lane exit ahead of you
+OTHER TRAFFIC (not in your path): 5 m away on ring inner lane, speed 15.9 m/s; 10 m away on ring outer lane, speed 12.1 m/s; 20 m away on ring inner lane, speed 12.6 m/s; 30 m away on ring inner lane, speed 15.9 m/s
+```
+模型原始输出:
+```json
+{"scene": "Ego outer lane, 15.9 m/s, exit 49 m ahead.", "critical_objects": "vehicle 38m ahead 12.4m/s entering exit; vehicle 46m ahead 3.0m/s entering exit", "abnormal_cause": "crawling vehicle 46m ahead entering exit; cannot pass, blocks path", "causal_reasoning": "Policy would hit stationary vehicle; cannot pass it in exit lane; must follow it to avoid collision.", "meta_action": "FOLLOW_VEHICLE"}
+```
+
+注意:这个例子的选择是对的(FOLLOW_VEHICLE),但 `causal_reasoning` 把 3.0 m/s 的车说成了"stationary vehicle"。4B 模型经常混淆"慢"和"静止"。
+
+**nominal, seed 501, t = 0**(原始日志 `results/hazard_test_v5/decisions_llm.csv`;DT 建议 FASTER,执行 FASTER,启动执行器:否;回合结局:成功)
+
+user message:
+```
+EGO: south access road (before the ring), speed 8.0 m/s. Learned policy wants: FASTER.
+Your exit (north exit road, single lane) starts 80 m ahead along your path.
+You will enter the ring OUTER lane in 24 m.
+YOUR PATH AHEAD (access lane and the outer ring lane up to 40 m after the entry): vehicle 31 m ahead along your path, speed 16.1 m/s
+OTHER TRAFFIC (not in your path): 26 m away on ring inner lane, speed 16.0 m/s
+```
+模型原始输出:
+```json
+{"scene": "Ego on south access, 8.0 m/s; exit 80 m ahead; enter ring outer lane in 24 m; vehicle 31 m ahead at 16.1 m/s.", "critical_objects": "vehicle 31 m ahead, 16.1 m/s, label: none", "abnormal_cause": "none", "causal_reasoning": "Normal traffic; policy can drive; no obstruction in path.", "meta_action": "FOLLOW_POLICY"}
+```
+
+### 0.6 第二版的局限
+
+- 抛锚车·入口:安全了(0% 碰撞),但完不成任务(在入口等待,20 s 内仍然等不到空档)。
+- 剩余的碰撞主要在慢速车·入口(30%)和抛锚车·环中(18%)。两者都和 IDM 交通车互相追尾、堵住车道有关。预知参考的结果也一样,所以问题不在 LLM。
+- "自车有责"是简化规则,不是正式的责任判定。总碰撞率照常报告。
+- 只测了文本 LLM。VLM 在第一版里明显更弱,第二版没有再测。
+- 执行器参数(停车余量、时距、换道间隙)是在开发集上通过诊断确定的。测试集只运行了一次,运行前测试方案已经冻结,写在 iteration log 里。
+
+---
+
+## 1. 任务与结论(第一版 v4)
 
 **老师的要求:** 提出一个有 LLM/VLM 参与的架构或算法,在之前研究用过的 roundabout 场景上实现,并从任务完成、安全、效率三方面评估。
 

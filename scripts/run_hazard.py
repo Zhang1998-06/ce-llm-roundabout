@@ -27,10 +27,14 @@ def episode(method, scen, seed):
     SKV = int(os.environ.get("SKILL_V", "3" if os.environ.get("PROMPT_VER") == "5" else "1"))
     skill = {1: lambda: H.BypassSkill(17.0, 6.0, slow_on_access=False), 2: H.SafeBypassSkill, 3: H.SmoothBypassSkill}[SKV]()
     SCALE, MAX = mod.SCALE, mod.MAX_EP_LEN
+    HOR = float(os.environ.get("HORIZON_S", "11"))           # sensitivity analysis only; 11 s is the protocol
+    if HOR != 11:
+        u.config["duration"] = HOR
+        MAX = int(HOR * u.config["policy_frequency"])
     np.random.seed(seed); obs, _ = env.reset(seed=seed)
     G_HAZ[id(env)] = u.road.vehicles[-1] if scen != "nominal" else None      # the hazard (appended by the Stall wrapper)
     states = torch.tensor(obs, dtype=torch.float32)[None, None]; actions = torch.zeros((1, 0, c.act_dim))
-    rtg = torch.tensor([[[MAX / SCALE]]]); ts = torch.zeros((1, 1), dtype=torch.long)
+    rtg = torch.tensor([[[mod.MAX_EP_LEN / SCALE]]]); ts = torch.zeros((1, 1), dtype=torch.long)   # target RTG as trained (2.2)
     dt_s = 1 / float(u.config["policy_frequency"])
     t, done, trunc, crashed, ok, tte = 0, False, False, False, False, np.nan
     speeds, mind, decs, nov = [], 99.0, [], 0

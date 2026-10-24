@@ -17,59 +17,64 @@ Chain-of-Causation (CoC) JSON: `scene → critical_objects → abnormal_cause �
                                                                      FOLLOW_POLICY / BYPASS_OBSTACLE / SLOW_DOWN / KEEP_SPEED
 ```
 
-**Full report (Chinese):** [`reports/CE_experiment_complete.md`](reports/CE_experiment_complete.md). It contains the
+**Full report (Chinese; section 0 is the current version):** [`reports/CE_experiment_complete.md`](reports/CE_experiment_complete.md). It contains the
 architecture, the verbatim prompts, all result tables, the complete iteration log and the exact geometry and
 executor action mapping.
 
 ## Results (test seeds 500–549, never used for development)
 
-Six long-tail hazards were added that the DT never saw in training:
+Six long-tail hazards the DT never saw in training, each placed at the entry, middle or exit of the ring:
+- a stalled vehicle (0 m/s), used to design the prompt;
+- a crawling vehicle (3 m/s), the generalisation test.
 
-| Hazard | Positions | Notes |
-|---|---|---|
-| Stalled vehicle (0 m/s) | entry / mid / exit of the ring | Used to design the prompt |
-| Crawling vehicle (3 m/s) | entry / mid / exit of the ring | Generalisation test with the **same prompt** |
+The table shows the mean over the six hazards, 50 episodes per scenario.
 
-The table shows success rate in %; collision rate is in parentheses. Each cell is 50 episodes.
+| Method | Success % | Collision % | At-fault collision % | Timeout % |
+|---|---:|---:|---:|---:|
+| DT (baseline) | 0.0 | 100.0 | 100.0 | 0.0 |
+| DT + the same longitudinal safety layer, no LLM (control) | 0.0 | 55.0 | 39.0 | 45.0 |
+| DT + LLM-CoC v4 (first version, simple executor) | 62.3 | 37.7 | – | 0.0 |
+| **DT + LLM-CoC v5 (current, safety-first executor)** | **45.0** | **9.7** | **9.0** | 45.3 |
+| Perfect recognition + the same maneuvers (reference) | 45.7 | 9.7 | 9.0 | 44.7 |
 
-| Scenario | DT (baseline) | Hand-written stationary rule (ref.) | **DT + LLM-CoC (Qwen3-4B, text)** |
-|---|---:|---:|---:|
-| nominal | 100 (0) | 100 (0) | **100 (0)**, 0 false overrides |
-| stalled · entry / mid / exit | 0 / 0 / 0 (100) | 56 / 72 / 96 | **56 / 70 / 94** |
-| crawling · entry / mid / exit | 0 / 0 / 0 (100) | 0 / 36 / 0 | **68 / 86 / 0** |
-| **mean of the 6 hazards** | **0 (100)** | 43.3 (56.3) | **62.3 (37.7)** |
+**Nominal traffic.** DT + LLM v5 reaches 100 % success with 0 overrides, identical to the DT.
 
-Further numbers for the LLM run:
-- Efficiency: the nominal completion time is identical to the DT (7.68 s).
-- Calls: 1911 LLM calls, 100 % valid JSON.
+**What the LLM does.** It decides whether there is an abnormal cause in the path. If there is, it chooses between
+passing it (`BYPASS_OBSTACLE`) and staying behind it (`FOLLOW_VEHICLE`). Following is the right choice when a moving
+slow vehicle is entering the single-lane exit ahead, because it can never be overtaken there.
 
-A VLM variant was also tested on seeds 500–529 (Qwen3-VL-2B, text + bird's-eye-view image):
-- Hazard mean 44.4 % success vs 0 % for the DT.
-- Nominal success 93.3 %; it is weaker than the text LLM.
+**Why the gain comes from the LLM.**
+- Without the LLM, the same safety layer has 0 % success: it can only slow the car down or stop it.
+- With the LLM, the results match the perfect-recognition reference, so the LLM's recognition and maneuver choice are
+  not the bottleneck.
 
-Full metric tables (collision, timeout, min distance, speed, time, calls, latency):
-[`results/hazard_test/final_tables.md`](results/hazard_test/final_tables.md).
+**The trade-off between v4 and v5.** Collisions fall from 37.7 % to 9.7 %, while success falls from 62.3 % to 45.0 %.
+Episodes that used to end in a crash now end in a timeout instead: the car waits or follows within the 11 s horizon.
+A 20 s horizon raises the reference to 56 % success and 13 % collisions.
 
-**Known limitations:**
-- The remaining collisions come mostly from the maneuver executor, not from recognition. The LLM matches an
-  oracle trigger in the stalled scenarios.
-- crawling · exit is unsolved by every method.
-- A v2 executor with longitudinal safety (`SafeBypassSkill`, `SKILL_V=2`) is work in progress. It is not used for the
-  results above; see `reports/iteration_log.md`, Phase 4.
+**Simulator caveat.** IDM traffic in this simulator only looks for a leader inside its current 17–20 m lane segment, so it
+rear-ends stopped cars just past a segment boundary. For this reason at-fault collisions (nuPlan-style) are reported in
+addition to total collisions.
+
+Full tables (min distance, speed, completion time, LLM calls, latency, 20 s sensitivity):
+[`results/hazard_test_v5/final_tables.md`](results/hazard_test_v5/final_tables.md).
+First-version tables: [`results/hazard_test/final_tables.md`](results/hazard_test/final_tables.md).
 
 ## Code map
 
 | Path | Role |
 |---|---|
-| `src/coc_supervisor.py` | Prompts (`SYSTEM_V4` is final), scene descriptions (`describe_v4`), `CoCSupervisor.ask()` (Ollama call, JSON parsing, `abnormal_cause = none` → FOLLOW_POLICY) |
-| `src/hazards.py` | Hazard scenarios (`SCENARIOS`, `Stall` wrapper), reference rule, oracle trigger, `BypassSkill` (v1, reported) and `SafeBypassSkill` (v2, WIP) |
+| `src/coc_supervisor.py` | Prompts (`SYSTEM_V5` current, `SYSTEM_V4` first version), scene descriptions (`describe_v5`), `CoCSupervisor.ask()` (Ollama call, JSON parsing, `abnormal_cause = none` → FOLLOW_POLICY) |
+| `src/hazards.py` | Hazard scenarios (`SCENARIOS`, `Stall` wrapper), reference rule, oracle trigger, executors `SmoothBypassSkill` + `FollowSkill` (v3, current), `BypassSkill` (v1), `SafeBypassSkill` (v2, abandoned); `smooth_acc_action` (no-LLM control) |
 | `src/evaluation.py` | Loads the original DT code and frozen checkpoint |
 | `src/bev_renderer.py` | Bird's-eye-view image for the VLM |
-| `scripts/run_hazard.py` | Closed-loop evaluation: methods `dt, rule, skill, llm, vlm` (+ `acc` with `SKILL_V=2`) |
-| `scripts/make_final_tables.py` | Builds `results/hazard_test/final_tables.md` |
+| `scripts/run_hazard.py` | Closed-loop evaluation: methods `dt, acc, oracle, llm, vlm` (+ `rule, skill, follow`); at-fault classification; logs every LLM call with the full user message and raw response |
+| `scripts/make_final_tables_v5.py`, `scripts/make_final_tables.py` | Build the v5 / v4 result tables |
+| `scripts/offline_v5.py` | Offline single-step accuracy check of prompt v5 |
 | `scripts/build_offline_set.py`, `scripts/offline_eval.py` | Offline single-step decision test set used to check prompts before closed-loop runs |
 | `scripts/replay_call.py` | Replays one episode and records the exact Ollama request/response |
-| `results/hazard_test/` | Final test data: per-episode, per-LLM-call (`decisions_*.csv`) and summary CSVs |
+| `results/hazard_test_v5/` | v5 test data: per-episode and per-LLM-call (`decisions_llm.csv`, incl. prompts and raw outputs) |
+| `results/hazard_test/` | v4 (first version) test data |
 | `results/hazard_dev*/` | Development runs of each iteration |
 | `results/phase1_nominal/`, `scripts/run_comparison.py`, `scripts/smoke.py`, `scripts/b0_scan.py`, `scripts/make_figures.py`, `src/vlm_supervisor.py`, `src/llm_supervisor.py` | Phase 1 (abandoned): a VLM YIELD supervisor in normal traffic that never beat the DT; see `reports/experiment_report.md` |
 
@@ -84,14 +89,15 @@ Full metric tables (collision, timeout, min distance, speed, time, calls, latenc
 ```bash
 ln -s <path>/uncertaintyDT/CNNDT_baseline/highway_env highway_env
 export CNNDT_ROOT=<path>/uncertaintyDT/CNNDT_baseline           # DT script + checkpoint (output2/)
-ollama pull qwen3:4b-instruct-2507-q4_K_M && ollama pull qwen3-vl:2b-instruct-q4_K_M
+ollama pull qwen3:4b-instruct-2507-q4_K_M
 
 S=nominal,stall_entry,stall_mid,stall_exit,slow_entry,slow_mid,slow_exit
-METHODS=dt,rule,skill SCEN=$S SEEDS=500-599 TAG=test NP=4 python scripts/run_hazard.py
-PROMPT_VER=4 METHODS=llm SCEN=$S SEEDS=500-549 TAG=test NP=4 python scripts/run_hazard.py
-PROMPT_VER=4 METHODS=vlm SCEN=$S SEEDS=500-529 TAG=test NP=2 python scripts/run_hazard.py
-python scripts/make_final_tables.py
+SKILL_V=3 METHODS=dt,acc,oracle SCEN=$S SEEDS=500-549 TAG=test_v5 NP=6 python scripts/run_hazard.py
+PROMPT_VER=5 METHODS=llm SCEN=$S SEEDS=500-549 TAG=test_v5 NP=3 python scripts/run_hazard.py   # implies executor v3
+HORIZON_S=20 SKILL_V=3 METHODS=dt,oracle SCEN=$S SEEDS=500-549 TAG=test_v5_h20 NP=6 python scripts/run_hazard.py
+python scripts/make_final_tables_v5.py
 ```
+First version (v4): `PROMPT_VER=4 METHODS=llm ... TAG=test` (executor v1 is the default without `SKILL_V`).
 
 Ollama runs at temperature 0, but its output is not guaranteed to be bit-identical across runs. Re-runs can
 therefore differ slightly from the logged decisions; the environment and DT are deterministic given the seed.
