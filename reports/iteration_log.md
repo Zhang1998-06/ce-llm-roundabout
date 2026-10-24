@@ -169,3 +169,96 @@ plus a non-LLM control `acc` (same cap on the DT always).
 Dev result (60 seeds): v2 oracle skill stall 0/43/83 %, slow 13/48/0 % (collisions still 8–100 %); acc 0 % success
 everywhere, 52–87 % collisions. **v2 is worse than v1 in stall_entry (100 % collisions) — not adopted yet; needs
 crash diagnosis of v2 (likely rear-end by followers when braking, or hitting the obstacle while pulling out at low speed).**
+
+### 4.2 v2 diagnosis (dev 200–259, oracle trigger)
+- ~half of the v2 crashes: braking on the access road (queue ahead) → ego enters the ring at 1–2 m/s → hit by ring traffic.
+- Low-speed lane change then FASTER with the cap computed in the target lane only → ego hits the stalled car before it has moved sideways.
+- Rear-end by followers after SLOWER.
+
+### 4.3 Two simulator facts found in the source (they explain most remaining collisions)
+1. `MDPVehicle.act("SLOWER")` takes the level below the **current** speed: at 12 m/s the target becomes 0 → a full stop
+   (initial deceleration ≈ 13 m/s²). `IDLE` keeps the target speed, so an executor can set `target_speed` itself.
+2. `Road.neighbour_vehicles` (used by IDM traffic to find its leader) only searches the **current lane segment**
+   (ring segments are 17–20 m). A stopped or slow car just past a segment boundary is invisible to the follower, which
+   then rear-ends it. Queued traffic also piles into the stalled car this way. → zero collisions is not reachable for any
+   controller that must slow down on the ring; rear-end impacts on an ego that keeps its lane are not the ego's fault.
+   New metric `collision_at_fault` (nuPlan-style): the ego is not at fault only when hit from behind (partner > 2 m behind)
+   while keeping its lane (no lane-change command in the last 3 steps) outside the merge zone (access road / first 10 m).
+   Total collisions are still reported.
+
+### 4.4 v3 executor (`SmoothBypassSkill`, `SKILL_V=3`)
+- Executor owns the target speed (sends IDLE): braking target from the needed deceleration
+  a = (v² − v_lead²) / 2(gap − 8 m), clipped to [1.5, 6] m/s²; otherwise rate-limited towards an IDM-like safe speed.
+- Access road: the DT's own (trained) ring entry. (v3a gated the entry on an outer-lane gap → the ego crept into ring
+  traffic; removed.)
+- Lane change only with a speed-dependent front/rear gap; the obstacle stays a leader until the lane change is complete;
+  ends 8 m past the obstacle; stays active on the exit road; exit-road vehicles are seen as leaders from the ring.
+- `FollowSkill`: same longitudinal control, no lane change (for a slow vehicle at the single-lane exit).
+- Dev, oracle trigger, success / collision / at-fault %:
+
+| scenario | DT | v1 oracle | v3 oracle bypass | v3 oracle follow | DT + same longitudinal safety (`acc`) |
+|---|---|---|---|---|---|
+| stall_entry | 0/100/100 | 55/45/– | 50/50/50 | – | 0/100/78 |
+| stall_mid | 0/100/100 | 78/22/– | 82/17/17 | – | 0/92/33 |
+| stall_exit | 0/100/100 | 87/13/– | 85/13/13 | – | 0/50/33 |
+| slow_entry | 0/100/100 | 0/100/– | 82/18/18 | – | 0/90/90 |
+| slow_mid | 0/100/100 | 38/62/– | 83/15/15 | – | 0/55/23 |
+| slow_exit | 0/100/100 | 0/100/– | 0/98/98 | **0/45/25** (55 % timeout) | 0/42/25 |
+
+  (v1's oracle only triggered on stationary vehicles; the v2/v3 oracle triggers on any vehicle < 5 m/s in the path.)
+  The `acc` control has 0 % success everywhere: the safety layer alone does not solve the hazards.
+- slow_exit: the crawler enters the single-lane north exit first, so bypassing cannot work (the ego must cut back in
+  front of it) → the right maneuver is to follow. This becomes a real decision for the LLM.
+
+### 4.5 Prompt v5 (`SYSTEM_V5`, `describe_v5`, `PROMPT_VER=5` → executor v3 automatically)
+- Meta-actions reduced to FOLLOW_POLICY / BYPASS_OBSTACLE / FOLLOW_VEHICLE (SLOW_DOWN / KEEP_SPEED removed; the VLM had
+  overused SLOW_DOWN).
+- Perception adds the exit (single lane, distance) and a map-zone label per path vehicle ("in the EXIT ZONE" = last
+  20 m of the ring before the exit, "on the exit road").
+- Rule in the prompt: BYPASS is the default; a STATIONARY vehicle is always bypassed; FOLLOW only if the abnormal vehicle
+  is MOVING and in the exit zone / on the exit road; the exit-zone label alone is not abnormal.
+- Offline check (`scripts/offline_v5.py`, dev seeds 200–209, t = 0..10, labels = the stated rule), Qwen3-4B:
+  - first draft with numeric "X m before your exit": 69 % (the 4B model mis-compares distances → FOLLOW overused);
+  - zone labels: 81.5 % (normal traffic in the exit zone became a false cause);
+  - + "exit zone alone is not abnormal" example: **94 %** (nominal 100, stall 100/98/100, slow_entry 100, slow_exit 89,
+    slow_mid 71 — late states where the crawler slowed to 1–2 m/s are called "stationary"). 100 % valid JSON, 0.82 s.
+- Decision log now stores `user_message`, `raw` response, `executed` action and `skill_started` per call.
+
+### 4.6 LLM v5 closed loop, dev seeds 200–229 (30 per scenario), success / collision / at-fault %
+- Run A (zone labels): nominal 90/10/10 (= DT on these seeds, 0 overrides); stall 43/57/57, 77/20/20, 80/17/17;
+  slow 77/23/23, 80/17/17, slow_exit 0/77/73.
+- slow_exit: when the LLM chose FOLLOW_VEHICLE the episode had 0 % at-fault collisions (86 % timeout); it chose
+  BYPASS in 21/28 decisions, calling the 3 m/s car "stationary". The 4B model conflates slow with stationary.
+- Perception wording tried offline: explicit "(moving)" attribute → 90 % (slow_exit 63 %); predicted manoeuvre labels
+  ("entering the single-lane exit ahead of you" / "stopped in the exit zone" / "on the single-lane exit road") → 91 %
+  (slow_exit 52 % but the errors are now "none", which is re-queried next step, instead of a committed wrong BYPASS:
+  wrong BYPASS on follow labels 2/21). Kept the predicted-manoeuvre labels → run B.
+- Run B (predicted-manoeuvre labels): slow_exit FOLLOW chosen in 25 / BYPASS in 3 decisions (was 7 / 21); but FOLLOW
+  episodes still had 56 % at-fault collisions → executor problem, not recognition.
+
+### 4.7 Executor fixes found by step-by-step traces (replaying the logged LLM decisions, `scratchpad/trace.py`)
+- Traffic crashes into the crawler ahead (IDM blind spot) → the leader stops abruptly; with an 8 m centre margin and the
+  0.6 s speed lag the ego touched the (rotated) wreck at < 1 m/s. → stop margin S0 = 10 m + time gap T = 1 s in both
+  `brake_target` and `safe_speed`.
+- Vehicles between the ego and the obstacle change lanes around it and reveal it late. → the obstacle the LLM designated
+  is always a leader (`obstacle_gap`) for both maneuvers.
+- Corridor leader detection (vehicles within 2.6 m laterally, cut-ins): no measurable effect; kept on (`CORRIDOR=1`).
+- stall_entry (stalled car 12 m after the merge): every variant either collides ~50 % (DT-style entry at speed) or
+  waits. Entry hold (stationary obstacle < 25 m after the merge → stop before the merge until the outer lane upstream
+  and the inner lane at the entry are free): 0 % collisions, 100 % timeout within the 11 s horizon. A low-speed creep
+  during the lane change made it worse (70 % collisions: steering needs speed) → reverted. **Decision: safety first —
+  hold at the entry** (a human driver would also wait); reported as a timeout, not hidden.
+- Final executor, oracle trigger, dev 200–259 (60 per scenario), success / collision / at-fault / timeout %:
+  stall 0/0/0/100, 82/12/12/7, 83/5/5/12; slow 82/17/17/2, 82/8/8/10; slow_exit (follow) 0/10/5/90.
+  Hazard mean: success 55 %, collision 8.6 %, at-fault 7.8 % (v1 oracle: 43 % / 57 %). `acc` control: 0 % success.
+- LAG_COMP 1.6 (make the speed loop reach the requested deceleration) tried: more rear-end / at-fault crashes in the
+  bypass scenarios (stall_mid at-fault 12 → 22 %) → reverted to 1.0.
+- Prompt v5 + example with a normal and a crawling vehicle both entering the exit (the 4B model had answered "none"
+  there and decided 2 steps late): offline 96.6 % (slow_exit 74 %, slow_mid 98 %, nominal 100 %).
+  LLM dev 200–229: slow_exit 0/20/13/80 (was 0/50/43/50); nominal identical to DT (0 overrides).
+
+## Phase 4 test protocol (frozen 2026-10-23 before any test-seed run)
+- Seeds 500–549 (50 per scenario), 7 scenarios. Methods: `dt`; `acc` (DT + the same longitudinal safety, no LLM);
+  `oracle` (true hazard + the prompt-v5 maneuver rule = perfect recognition reference); `llm` (Qwen3-4B, PROMPT_VER=5,
+  executor v3). SKILL_V=3, S0=10, T_GAP=1, LAG_COMP=1, ENTRY_HOLD=1, CORRIDOR=1. Metrics: success, collision,
+  at-fault collision, timeout, speed, completion time, min distance, calls, latency.

@@ -1,3 +1,4 @@
+import os
 """Long-tail hazard scenarios on roundabout-v0: a broken-down (stationary) vehicle on the ego's ring route."""
 import gymnasium as gym
 import numpy as np
@@ -146,6 +147,23 @@ def _lane_leader(env, lane=None, ignore=()):
         return best
     if where.startswith("ring") or where.startswith("south access"):
         pa = [x for x in C.path_ahead(env, 60.0) if x[1] not in ignore]
+        if where.startswith("ring") and CORRIDOR:                         # also vehicles cutting into the ego's corridor
+            r, th = float(np.hypot(*e.position)), C._ring_angle(e.position)
+            for v in u.road.vehicles:
+                if v is e or v in ignore or any(v is w for _, w in pa) or not C._where(v).startswith("ring"):
+                    continue
+                if abs(float(np.hypot(*v.position)) - r) < 2.6:
+                    g = r * ((th - C._ring_angle(v.position) + np.pi) % (2 * np.pi) - np.pi)
+                    if 0 < g <= 60:
+                        pa.append((g, v))
+            pa.sort(key=lambda x: x[0])
+        if where.startswith("ring outer") and C._ring_angle(e.position) < np.deg2rad(-20):   # last segment before the north exit
+            for v in u.road.vehicles:                                       # vehicles already on the exit road are ahead too
+                if v is not e and v not in ignore and C._where(v).startswith("north exit"):
+                    d = float(np.linalg.norm(v.position - e.position))
+                    if d <= 60:
+                        pa.append((d, v))
+            pa.sort(key=lambda x: x[0])
         return pa[0] if pa else None
     fwd = np.array([np.cos(e.heading), np.sin(e.heading)])                  # exit road (straight)
     for v in u.road.vehicles:
@@ -241,3 +259,228 @@ def acc_action(env, a_dt):
     ld = _lane_leader(env)
     cap = safe_level(ld[0], ld[1].speed) if ld else 16.0
     return longitudinal(a_dt, ts, cap)
+
+
+# ---------------------------------------------------------------- v3 executor: smooth longitudinal control
+# Two facts of this simulator drive the v3 design (Phase 4 diagnosis):
+#  - SLOWER picks the level below the *current* speed: at 12 m/s it sets the target to 0 (a full stop, ~13 m/s^2 at first);
+#  - the IDM traffic brakes gently (comfortable deceleration 1 m/s^2), so a hard-braking ego is rear-ended.
+# IDLE keeps the target speed, so the executor sets the target speed itself and sends IDLE: rate-limited braking.
+DEC_STEP, ACC_STEP = 1.0, 2.0                             # target-speed change per 0.5 s policy step [m/s]
+CORRIDOR = os.environ.get("CORRIDOR", "1") == "1"         # leader = any vehicle within 2.6 m laterally (cut-ins), not only same lane
+ENTRY_HOLD = os.environ.get("ENTRY_HOLD", "1") == "1"    # obstacle within 25 m after the merge: wait before entering
+MERGE_GATE = False                                        # v3a gated the ring entry; it made the ego creep into ring traffic
+
+
+KP_A = 1 / 0.6                                              # ControlledVehicle speed-tracking gain
+LAG_COMP = float(os.environ.get("LAG_COMP", "1.0"))   # 1.6 tried: harder braking -> more rear-end and at-fault crashes
+
+
+S0, T_GAP = float(os.environ.get("S0", "10")), float(os.environ.get("T_GAP", "1.0"))   # stop margin (centre gap) and time gap
+
+
+def brake_target(e, leaders, s0=None, a_comf=1.5, a_max=6.0):
+    """Target speed that brings the ego to v_lead (s0 + T*v) behind the most critical leader:
+    decel = (v^2 - vl^2) / 2(gap - s0 - T*v). The time-gap term covers the speed-tracking lag and leaders that stop
+    abruptly (e.g. traffic crashing into the hazard ahead, which IDM traffic often does in this simulator)."""
+    s0 = S0 if s0 is None else s0
+    a_req = 0.0
+    for g, v in leaders:
+        if e.speed > v.speed or g < s0:
+            a_req = max(a_req, (e.speed ** 2 - v.speed ** 2) / (2 * max(0.5, g - s0 - T_GAP * e.speed)), 9.9 if g < s0 else 0)
+    if a_req < 0.5:
+        return None
+    a_cmd = min(a_max, max(a_comf, 1.3 * a_req))
+    return max(0.0, e.speed - LAG_COMP * a_cmd / KP_A)                     # LAG_COMP: the speed loop only reaches ~2/3 of it
+
+
+def safe_speed(gap, v_lead, s0=None, b=2.0):
+    """Highest speed that can still stop (s0 + T*v) behind the leader with deceleration b (leader keeps v_lead)."""
+    s0 = S0 if s0 is None else s0
+    d = max(0.0, gap - s0)
+    return v_lead + max(0.0, -b * T_GAP + np.sqrt((b * T_GAP) ** 2 + 2 * b * d))      # solves v^2 / 2b + T v = d
+
+
+def merge_blocked(env, horizon=3.0):
+    """Ego on the access road: does outer-ring traffic reach the merge point before the ego is safely in (t_ego + horizon)?"""
+    import coc_supervisor as C
+    u = env.unwrapped
+    e = u.vehicle
+    th_en, p_en = C._entry_angle(env)
+    d = float(np.linalg.norm(p_en - e.position))
+    v, a = max(float(e.speed), 0.0), 2.0
+    t_e = (-v + np.sqrt(v * v + 2 * a * d)) / a                         # time to the merge if accelerating gently
+    for w in u.road.vehicles:
+        if w is e or C._ring_lane(w) != "outer" or not C._where(w).startswith("ring"):
+            continue
+        up = 24.0 * ((C._ring_angle(w.position) - th_en) % (2 * np.pi))  # arc distance upstream of the merge
+        if up > 80:
+            continue
+        if up < 8 or up / max(w.speed, 0.5) < t_e + horizon:
+            return True, d
+    return False, d
+
+
+def obstacle_gap(env, ob):
+    """(gap, obstacle) if the designated obstacle is in the ego's path ahead (ring / access / exit road), else None."""
+    import coc_supervisor as C
+    if ob is None:
+        return None
+    for g, v in C.path_ahead_x(env, 60.0):
+        if v is ob:
+            return (g, v)
+    return None
+
+
+class SmoothBypassSkill(SafeBypassSkill):
+    """Bypass maneuver v3: v2 logic, but the executor owns the target speed (rate-limited, IDM-like safe speed),
+    gates the ring entry on a gap in the outer lane, and keeps the obstacle as a leader until the lane change is done."""
+
+    def _cmd(self, env, a_lat, v_des, leaders=()):
+        e = env.unwrapped.vehicle
+        ts = float(getattr(e, "target_speed", e.speed))
+        bt = brake_target(e, leaders)
+        if bt is not None:                                                    # braking needed: decel from the gap
+            e.target_speed = float(min(ts, bt))
+        else:
+            e.target_speed = float(np.clip(v_des, min(ts, e.speed) - DEC_STEP, min(16.0, ts + ACC_STEP)))
+        e.target_speed = max(0.0, e.target_speed)
+        return a_lat                                                          # IDLE or a lane change; target speed kept
+
+    def _obstacle_near_entry(self, env, d_max=25.0):
+        import coc_supervisor as C
+        if self.obstacle is None or C._ring_lane(self.obstacle) != "outer" or self.obstacle.speed >= 0.5:
+            return False                                                      # only a stationary obstacle blocks the entry
+        th_en, _ = C._entry_angle(env)
+        return 24.0 * ((th_en - C._ring_angle(self.obstacle.position)) % (2 * np.pi)) < d_max
+
+    def _entry_hold(self, env, a_dt):
+        """Hold before the merge until the outer lane upstream AND the inner lane at the entry are free, then go in
+        slowly (the ring logic then changes to the inner lane at once)."""
+        import coc_supervisor as C
+        u = env.unwrapped
+        e = u.vehicle
+        th_en, p_en = C._entry_angle(env)
+        blocked, d = merge_blocked(env, horizon=4.0)
+        for w in u.road.vehicles:                                             # inner lane near the entry
+            if w is e or C._ring_lane(w) != "inner" or not C._where(w).startswith("ring"):
+                continue
+            g = 20.0 * ((C._ring_angle(w.position) - th_en + np.pi) % (2 * np.pi) - np.pi)   # > 0: upstream
+            if -8 < g < 8 + 2.5 * w.speed:
+                blocked = True
+        stop = type("Stop", (), {"speed": 0.0})()
+        og = obstacle_gap(env, self.obstacle)
+        leaders = [og] if og else []
+        if blocked:
+            leaders.append((max(0.0, d - 4.0) + S0, stop))                    # stop ~4 m before the merge point
+        ld = _lane_leader(env)
+        if ld:
+            leaders.append(ld)
+        v_des = min([16.0] + [safe_speed(g, v.speed) for g, v in leaders])
+        return self._cmd(env, 1, v_des, leaders)
+
+    def _changed(self, env):
+        import coc_supervisor as C
+        r = float(np.hypot(*env.unwrapped.vehicle.position))
+        return C._ring_lane(env.unwrapped.vehicle) == self.target and abs(r - (20.0 if self.target == "inner" else 24.0)) < 1.0
+
+    def act(self, env, a_dt):
+        import coc_supervisor as C
+        u = env.unwrapped
+        e = u.vehicle
+        fwd = np.array([np.cos(e.heading), np.sin(e.heading)])
+        if self.obstacle is not None and np.dot(self.obstacle.position - e.position, fwd) < -self.end_gap:
+            self.stop()
+            return a_dt
+        where = C._where(e)
+        on_ring = where.startswith("ring")
+        if where.startswith("south access") and ENTRY_HOLD and self._obstacle_near_entry(env):
+            return self._entry_hold(env, a_dt)                                # obstacle right after the merge: wait first
+        if where.startswith("south access") and not MERGE_GATE:
+            return 1 if a_dt in (0, 2) else a_dt                              # the policy's own (trained) ring entry
+        leaders = []
+        if self.done_change and on_ring:
+            ld = _lane_leader(env, self.target, ignore=(self.obstacle,))
+            if ld:
+                leaders.append(ld)
+            if not self._changed(env):                                        # still beside / behind the obstacle
+                ld0 = _lane_leader(env)
+                if ld0:
+                    leaders.append(ld0)
+        else:
+            ld = _lane_leader(env)
+            if ld:
+                leaders.append(ld)
+            og = obstacle_gap(env, self.obstacle)                             # the designated obstacle is always a leader
+            if og:
+                leaders.append(og)
+        v_des = min([16.0] + [safe_speed(g, v.speed) for g, v in leaders])
+        if where.startswith("south access"):
+            blocked, d = merge_blocked(env)
+            if blocked:                                                       # stop before the merge point
+                v_des = min(v_des, safe_speed(d + 4.0, 0.0))
+                leaders.append((d + 4.0, type("Stop", (), {"speed": 0.0})()))
+        if on_ring and not self.done_change:
+            lane = C._ring_lane(e)
+            other = "inner" if lane == "outer" else "outer"
+            if e.speed > 1.0 and self._gap_free(env, other):
+                self.done_change, self.target = True, other
+                return self._cmd(env, 0 if other == "inner" else 2, v_des, leaders)
+            if e.speed <= 1.0 and self._gap_free(env, other):
+                v_des = max(v_des, 3.0)                                       # creep to be able to steer
+                leaders = []
+        return self._cmd(env, 1, v_des, leaders)
+
+    def _gap_free(self, env, other):
+        import coc_supervisor as C
+        u = env.unwrapped
+        e = u.vehicle
+        r, th = float(np.hypot(*e.position)), C._ring_angle(e.position)
+        for v in u.road.vehicles:
+            if v is e or C._ring_lane(v) != other or not C._where(v).startswith("ring"):
+                continue
+            g = r * ((th - C._ring_angle(v.position) + np.pi) % (2 * np.pi) - np.pi)
+            dv = v.speed - e.speed
+            if g >= 0 and g < 7.0 + 1.5 * max(0.0, -dv):                    # ahead in the target lane
+                return False
+            if g < 0 and -g < 9.0 + 1.5 * max(0.0, dv) + max(0.0, dv) ** 2 / 2.0:   # behind, closing (follower brakes ~1 m/s^2)
+                return False
+        return True
+
+
+def smooth_acc_action(env, a_dt):
+    """Non-LLM control baseline for v3: the same rate-limited safe-speed cap on the policy at every step (no lane change)."""
+    e = env.unwrapped.vehicle
+    ts = float(getattr(e, "target_speed", e.speed))
+    ld = _lane_leader(env)
+    bt = brake_target(e, [ld]) if ld else None
+    if bt is None:
+        v_cap = safe_speed(ld[0], ld[1].speed) if ld else 16.0
+        return 1 if (a_dt == 3 and ts + 8 > v_cap + 1) else a_dt
+    e.target_speed = float(min(ts, bt))
+    return 1 if a_dt in (3, 4) else a_dt
+
+
+class FollowSkill(SmoothBypassSkill):
+    """Follow maneuver: stay behind the abnormal vehicle at a safe distance (smooth braking, also to a stop),
+    no lane change. For causes a lane change cannot solve (e.g. a slow vehicle at the single-lane exit).
+    Ends when the obstacle is no longer ahead within 60 m."""
+
+    def act(self, env, a_dt):
+        import coc_supervisor as C
+        u = env.unwrapped
+        e = u.vehicle
+        fwd = np.array([np.cos(e.heading), np.sin(e.heading)])
+        d = self.obstacle.position - e.position if self.obstacle is not None else None
+        if d is None or np.dot(d, fwd) < -self.end_gap or np.linalg.norm(d) > 60:
+            self.stop()
+            return a_dt
+        if C._where(e).startswith("south access"):
+            return 1 if a_dt in (0, 2) else a_dt
+        ld = _lane_leader(env)
+        leaders = [ld] if ld else []
+        og = obstacle_gap(env, self.obstacle)                                 # the designated obstacle is always a leader
+        if og:
+            leaders.append(og)
+        v_des = min([16.0] + [safe_speed(g, v.speed) for g, v in leaders])
+        return self._cmd(env, 1, v_des, leaders)

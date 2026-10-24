@@ -106,7 +106,7 @@ class CoCSupervisor:
             user["images"] = [base64.b64encode(png).decode()]
         body = {"model": self.model, "stream": False, "format": "json", "keep_alive": "60m",
                 "options": {"temperature": 0, "num_predict": self.num_predict, "num_ctx": self.num_ctx},
-                "messages": [{"role": "system", "content": {1: SYSTEM, 2: SYSTEM_V2, 3: SYSTEM_V3, 4: SYSTEM_V4}[self.version] + (VISION_NOTE if self.vision else "")}, user]}
+                "messages": [{"role": "system", "content": {1: SYSTEM, 2: SYSTEM_V2, 3: SYSTEM_V3, 4: SYSTEM_V4, 5: SYSTEM_V5}[self.version] + (VISION_NOTE if self.vision else "")}, user]}
         t0 = time.time()
         raw, meta, valid, out = "", "FOLLOW_POLICY", False, {}
         try:
@@ -115,7 +115,7 @@ class CoCSupervisor:
             raw = r.json()["message"]["content"]
             out = json.loads(raw)
             m = str(out.get("meta_action", "")).strip().upper()
-            if m in (META_V4 if self.version == 4 else META):
+            if m in {4: META_V4, 5: META_V5}.get(self.version, META):
                 meta, valid = m, True
                 # v3+ grounding: an override must name a cause; "none" -> the policy keeps driving
                 if self.version >= 3 and str(out.get("abnormal_cause", "none")).strip().lower().startswith("none"):
@@ -397,4 +397,131 @@ def describe_v4(env, proposed_name):
     if rest:
         L.append("OTHER TRAFFIC (not in your path): " + "; ".join(
             f"{np.linalg.norm(v.position - e.position):.0f} m away on {_where(v)}, {tag(v)}" for v in rest[:4]))
+    return "\n".join(L)
+
+
+# ---------------------------------------------------------------- v5: maneuver choice bypass vs follow (+ exit geometry)
+META_V5 = ("FOLLOW_POLICY", "BYPASS_OBSTACLE", "FOLLOW_VEHICLE")
+
+SYSTEM_V5 = """You are the high-level reasoning module of a self-driving car (the EGO) in a two-lane roundabout.
+A learned low-level policy drives the car. It handles all normal traffic well: entering the ring, following,
+vehicles close beside it in the other lane. It was never trained on abnormal situations.
+You override it ONLY when there is a concrete ABNORMAL CAUSE.
+
+ROAD: the ego enters the ring on the OUTER lane and must leave at the north exit. The INNER lane is on the ego's left.
+Normal ring traffic moves at 12-16 m/s. The NORTH EXIT ROAD IS A SINGLE LANE: every car that leaves there, including
+the ego, must pass through it one after another.
+
+WHAT COUNTS AS AN ABNORMAL CAUSE: something IN THE EGO'S PATH AHEAD (its own lane ahead, the ring lane it is about to
+enter, or the exit road it will take) that will block it or that it will hit: e.g. a stationary or broken-down vehicle,
+an obstacle, a vehicle far slower than traffic, a vehicle coming the wrong way.
+NOT a cause: normal moving traffic (even close), anything behind the ego, vehicles beside the ego in the other lane,
+stationary vehicles that are not in the ego's path.
+
+MANEUVERS (meta_action). Both maneuvers are executed automatically and brake smoothly when needed.
+- FOLLOW_POLICY: let the learned policy drive (default; required when abnormal_cause is "none").
+- BYPASS_OBSTACLE: THE DEFAULT MANEUVER for an abnormal vehicle in your path. Passes it in the other ring lane: the car
+  keeps moving, changes lane as soon as the gap is free, and returns control to the policy once the obstacle is behind.
+  Also for a vehicle "stopped in the exit zone": it does not move, so you pass it and still take the exit.
+- FOLLOW_VEHICLE: stay behind the abnormal vehicle at a safe distance (slow down, stop if needed), no lane change.
+  ONLY when the abnormal vehicle is "entering the single-lane exit ahead of you" or "on the single-lane exit road":
+  it will be in the single exit lane before you, so you can never get in front of it; passing it is impossible.
+A vehicle entering the exit at normal speed (12-16 m/s) is NORMAL traffic -> "none".
+
+CHAIN OF CAUSATION — fill the JSON fields in order:
+1. scene: ego location, speed, distance to the exit.
+2. critical_objects: the vehicle(s) in the ego's path ahead (gap, speed, label); copy numbers exactly.
+3. abnormal_cause: "none", or the concrete cause in the ego's path (which vehicle, gap, why abnormal).
+4. causal_reasoning: if abnormal_cause is "none": "normal traffic, the policy keeps driving". Otherwise: what happens
+   if the policy keeps driving; can the vehicle be passed before the exit; which maneuver removes the cause.
+5. meta_action: one of FOLLOW_POLICY, BYPASS_OBSTACLE, FOLLOW_VEHICLE.
+
+EXAMPLES
+- Path ahead: vehicle 20 m ahead, 15.8 m/s; a vehicle beside in the inner lane -> "none" -> FOLLOW_POLICY.
+- Path ahead clear; a stationary vehicle 15 m behind in the other lane -> "none" (not in my path) -> FOLLOW_POLICY.
+- Path ahead: STATIONARY vehicle 30 m ahead in my lane -> cause: it blocks my lane -> BYPASS_OBSTACLE.
+- Ego on the access road; the ring lane I enter has a STATIONARY vehicle 10 m after the entry -> cause: it blocks the
+  lane I will enter -> BYPASS_OBSTACLE.
+- Path ahead: STATIONARY vehicle 25 m ahead, stopped in the exit zone -> cause: it blocks my lane; it does not move, so
+  I can pass it and still exit -> BYPASS_OBSTACLE.
+- Path ahead: vehicle 30 m ahead at 3.0 m/s (no exit label) -> cause: crawling vehicle in my lane, still on the ring;
+  I can pass it -> BYPASS_OBSTACLE.
+- Path ahead: vehicle 25 m ahead at 15.2 m/s, entering the single-lane exit ahead of you -> "none" (normal speed) ->
+  FOLLOW_POLICY.
+- Path ahead: vehicle 18 m ahead at 3.0 m/s, entering the single-lane exit ahead of you -> cause: crawling vehicle
+  entering the single exit lane before me; I can never get in front of it -> FOLLOW_VEHICLE.
+- Path ahead: vehicle 37 m ahead at 12.5 m/s, entering the single-lane exit ahead of you; vehicle 46 m ahead at 3.0 m/s,
+  entering the single-lane exit ahead of you -> cause: the 3.0 m/s vehicle is crawling into the single exit lane (the
+  12.5 m/s one is normal); I can never get in front of it -> FOLLOW_VEHICLE.
+
+Keep each field under 25 words. Return only JSON:
+{"scene": "...", "critical_objects": "...", "abnormal_cause": "...", "causal_reasoning": "...", "meta_action": "..."}
+"""
+
+EXIT_ZONE = 20.0                                             # [m] last part of the ring before the north exit (map zone)
+_TH_NX = np.deg2rad(-66.0)                                   # ring angle of the north exit node (outer lane)
+
+
+def to_exit(env, v):
+    """Distance along the route from vehicle v to the start of the north exit road (0 if already on it), or None."""
+    w = _where(v)
+    if w.startswith("north exit"):
+        return 0.0
+    if w.startswith("ring"):
+        return float(np.hypot(*v.position)) * ((_ring_angle(v.position) - _TH_NX) % (2 * np.pi))
+    if w.startswith("south access"):
+        th_en, p_en = _entry_angle(env)
+        return float(np.linalg.norm(p_en - v.position)) + 24.0 * ((th_en - _TH_NX) % (2 * np.pi))
+    return None
+
+
+def path_ahead_x(env, sense=50.0):
+    """path_ahead + vehicles already on the north exit road when the ego is near its exit."""
+    u = env.unwrapped
+    e = u.vehicle
+    out = list(path_ahead(env, sense))
+    de = to_exit(env, e)
+    if de is not None and de <= sense and not _where(e).startswith("north exit"):
+        for v in u.road.vehicles:
+            if v is not e and _where(v).startswith("north exit") and all(v is not w for _, w in out):
+                d = de + float(np.linalg.norm(v.position - u.road.network.get_lane(("nx", "nxs", 0)).position(0, 0)))
+                if d <= sense:
+                    out.append((d, v))
+    return sorted(out, key=lambda x: x[0])
+
+
+def describe_v5(env, proposed_name):
+    u = env.unwrapped
+    e = u.vehicle
+    ego_where = _where(e)
+
+    def tag(v):                                                  # motion state + map zone / predicted manoeuvre
+        moving = v.speed >= 0.5
+        s = f"speed {v.speed:.1f} m/s" + (" (STATIONARY)" if not moving else "")
+        dx = to_exit(env, v)
+        if dx is not None and dx == 0:
+            s += ", on the single-lane exit road"
+        elif dx is not None and dx < EXIT_ZONE and _where(v).startswith("ring"):
+            s += ", entering the single-lane exit ahead of you" if moving else ", stopped in the exit zone"
+        return s
+
+    de = to_exit(env, e)
+    L = [f"EGO: {ego_where}, speed {e.speed:.1f} m/s. Learned policy wants: {proposed_name}."]
+    if de is not None:
+        L.append(f"Your exit (north exit road, single lane) starts {de:.0f} m ahead along your path.")
+    pa = path_ahead_x(env)[:2]
+    if ego_where.startswith("ring"):
+        L.append("YOUR PATH AHEAD (your ring lane, then the exit road): " + ("; ".join(f"vehicle {g:.0f} m ahead, {tag(v)}" for g, v in pa) if pa else "clear for 50 m"))
+    else:
+        th_en, p_en = _entry_angle(env)
+        L.append(f"You will enter the ring OUTER lane in {np.linalg.norm(p_en - e.position):.0f} m.")
+        L.append("YOUR PATH AHEAD (access lane and the outer ring lane up to 40 m after the entry): " +
+                 ("; ".join(f"vehicle {g:.0f} m ahead along your path, {tag(v)}" for g, v in pa) if pa else "clear"))
+    rest = [v for v in u.road.vehicles if v is not e and all(v is not w for _, w in pa)
+            and np.linalg.norm(v.position - e.position) <= 40]
+    rest.sort(key=lambda v: np.linalg.norm(v.position - e.position))
+    if rest:
+        L.append("OTHER TRAFFIC (not in your path): " + "; ".join(
+            f"{np.linalg.norm(v.position - e.position):.0f} m away on {_where(v)}, speed {v.speed:.1f} m/s"
+            + (" (STATIONARY)" if v.speed < 0.5 else "") for v in rest[:4]))
     return "\n".join(L)

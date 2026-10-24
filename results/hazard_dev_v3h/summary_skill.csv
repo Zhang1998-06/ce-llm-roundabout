@@ -1,0 +1,6 @@
+scenario,method,n,success,collision,at_fault,timeout,speed,time,min_dist,overrides,calls,latency,invalid
+slow_entry,skill,60,81.667,16.667,16.667,1.667,13.784,7.735,3.947,0.917,0.0,,0
+slow_mid,skill,60,81.667,8.333,8.333,10.0,13.629,7.48,4.725,1.5,0.0,,0
+stall_entry,skill,60,0.0,70.0,70.0,30.0,3.299,,4.917,10.067,0.0,,0
+stall_exit,skill,60,83.333,5.0,5.0,11.667,13.616,7.54,4.52,1.5,0.0,,0
+stall_mid,skill,60,81.667,13.333,13.333,5.0,13.685,7.48,4.41,1.35,0.0,,0
