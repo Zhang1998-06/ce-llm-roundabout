@@ -1,0 +1,24 @@
+t= 0 ( 0.0 s) executed=FASTER     ego: south access road v=12.5 target_v=16.0 | stalled car: -
+t= 1 ( 0.5 s) executed=IDLE       ego: south access road v=14.5 target_v=16.0 | stalled car: -
+t= 2 ( 1.0 s) executed=IDLE       ego: south access road v=15.3 target_v=16.0 | stalled car: -
+t= 3 ( 1.5 s) executed=IDLE       ego: ring, outer v=15.7 target_v=16.0 | stalled car: +32 m along the ring
+t= 4 ( 2.0 s) executed=LANE_LEFT  ego: ring, outer v=13.7 target_v=12.1 | stalled car: +22 m along the ring
+t= 5 ( 2.5 s) executed=IDLE       ego: ring, inner v=11.7 target_v=10.1 | stalled car: +15 m along the ring
+t= 6 ( 3.0 s) executed=IDLE       ego: ring, inner v=11.9 target_v=12.1 | stalled car: +9 m along the ring
+t= 7 ( 3.5 s) executed=IDLE       ego: ring, inner v=13.1 target_v=14.1 | stalled car: +3 m along the ring
+t= 8 ( 4.0 s) executed=IDLE       ego: ring, inner v=14.7 target_v=16.0 | stalled car: -3 m along the ring
+t= 9 ( 4.5 s) executed=IDLE       ego: ring, inner v=15.4 target_v=16.0 | stalled car: -10 m along the ring
+t=10 ( 5.0 s) executed=IDLE       ego: ring, inner v=15.8 target_v=16.0 | stalled car: -18 m along the ring
+t=11 ( 5.5 s) executed=IDLE       ego: ring, outer v=15.9 target_v=16.0 | stalled car: -28 m along the ring
+t=12 ( 6.0 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=13 ( 6.5 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=14 ( 7.0 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=15 ( 7.5 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=16 ( 8.0 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=17 ( 8.5 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=18 ( 9.0 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=19 ( 9.5 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=20 (10.0 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+t=21 (10.5 s) executed=IDLE       ego: north exit road v=16.0 target_v=16.0 | stalled car: -
+{'success': 1, 'collision': 0, 'timeout': 0, 'completion_time': 7.5, 'n_starts': 1}
+matches the logged episode: True

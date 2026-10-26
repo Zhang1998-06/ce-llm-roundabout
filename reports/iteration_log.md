@@ -276,3 +276,109 @@ Hazard mean success / collision / at-fault / timeout %:
 - Trade-off vs v4: collisions 37.7 → 9.7 %, success 62.3 → 45.0 % (stall_entry waits at the entry; the margins cost time).
 - Next steps if continued: a smarter entry for stall_entry (enter in the inner lane directly); fix the IDM blind spot
   in a separate sensitivity study (would change the traffic model, so all baselines must be rerun); VLM with prompt v5.
+
+## Phase 5 (v6): does the model's own scene understanding help the DT? (started 2026-10-25)
+Why a new phase: the v5 result cannot be attributed to the model's understanding.
+- `describe_v5` already told the model which vehicles are "YOUR PATH AHEAD" vs "OTHER TRAFFIC (not in your path)",
+  labelled them "(STATIONARY)", "entering the single-lane exit ahead of you", "stopped in the exit zone".
+- `SYSTEM_V5` mapped exactly these labels to maneuvers ("BYPASS is the default ... FOLLOW_VEHICLE ONLY when ...") with
+  examples that match the test conditions one to one.
+- `run_hazard.py` (v5) chose the maneuver target itself: the slowest of the first 3 path vehicles.
+- Every hazard in the 6 test scenarios was on the ego's path, so "intervene whenever something abnormal is listed in
+  the path" was always right; no scenario required the model to decide that an abnormal vehicle does NOT matter.
+
+### 5.1 Scenario design (feasibility probe, DT + reference rule, dev seeds 200–219)
+Idea: keep the same object (a stalled or crawling car) and change only its relation to the ego's route.
+- stall_past_exit (outer lane, 9.6 m AFTER the ego's exit; mirror of stall_exit): DT 95 % success → no intervention
+  needed; the v5 path logic would list it as "path ahead" (bug: the path did not stop at the exit).
+- stall_upstream (outer lane, 12 m BEFORE the ego's merge point, i.e. behind the ego): DT 100 % → no intervention needed.
+- stall_mid_inner (inner lane, same angle as stall_mid): DT 100 % collisions, but the trace shows why: IDM traffic hits the
+  stalled car (lane-segment blind spot) and the wreck slides into the OUTER lane ahead of the ego. It becomes a
+  different hazard (a wreck in the ego's lane with the other lane blocked), not a clean "other lane" control → excluded,
+  reported as a limitation.
+- stall_entry dropped: every method times out (entry hold), it cannot separate methods.
+Final set: nominal; intervention needed: stall_mid (bypass), stall_exit (bypass), slow_exit (follow);
+no intervention needed: stall_past_exit, stall_upstream. Pairs: stall_exit vs stall_past_exit (before/after the exit),
+stall_exit vs slow_exit (stationary/crawling at the same place), stall_mid vs stall_upstream (ahead/behind).
+
+### 5.2 New interfaces
+- `perceive_v6` / `describe_v6`: every vehicle within 50 m with a stable id, road, lane, position along the road
+  (ring: signed arc in the driving direction relative to the ego or to its merge point), speed. No STATIONARY, path,
+  exit-zone or manoeuvre labels. Route given as navigation (where the north exit leaves the ring).
+- `SYSTEM_V6`: road facts, the policy's training limitation, decision meanings / executor constraints, cost of
+  interventions, task ("judge the situation for the ego's own route"). No rule table, no examples.
+- Output `{consequence, decision, target_id}`; the executor only checks that the id exists (refusals are logged as
+  `rejected_invalid_target`).
+- Controls on the same facts + same executor (`src/rules_v6.py`): `naive` (any < 5 m/s vehicle within 40 m in front,
+  straight-line geometry → BYPASS) and `designed` (route-aware hand-written rule = the designer's answer key).
+- `reference()`: the designed logic applied to the injected vehicle only (privileged), for decision scoring.
+- Rule probe (dev 200–219): naive loses 20 points of success in stall_past_exit (unnecessary bypass) and has 90 %
+  collisions in slow_exit (bypasses a crawler at the exit); designed = DT where no intervention is needed.
+
+### 5.3 Offline single-step checks (dev states from the designed-rule runs, balanced per scenario/label)
+| draft | change | 4B instruct | 8B (no think) |
+|---|---|---:|---:|
+| p1 | flat list sorted by distance | 41 % | – |
+| p2 | grouped by lane + `critical_objects` field | 8.7 % (intervenes everywhere) | – |
+| p3 | + kinematics (time to reach each ring vehicle at current speeds, every lane), no `critical_objects` | 53 % | 47 % |
+| p3 | same, with `critical_objects` | 21 % | 22 % |
+| p4 | + map landmarks in the same 1-D lane coordinate ([YOU], [YOUR MERGE POINT], [YOUR EXIT]); reference no longer cut at 40/50 m | 49 % | – |
+- Bug found: the old `_where` still says "ring" for the first metres of the exit road; v6 supervision now stops on
+  `road_of(ego)` = exit road, so the reference is not computed in a meaningless frame.
+- Error pattern (4B): stall_mid nearly always right (80–90 %), but in the exit area the model ignores a 0 or 3 m/s car in
+  its own lane ("no collision, traffic flows") or bypasses moving 16 m/s cars ("may block the merge"). FOLLOW_VEHICLE
+  for the crawler before the exit: 0/10 in every draft. 8B without thinking is not better.
+- Reasoning model `qwen3:4b-thinking-2507` (p4 input): 30 s per call, all 39 calls hit the 4096-token budget while still
+  thinking (~14 k characters) → 0 % valid JSON. Not usable in a closed loop at 2 Hz on an RTX 3070 Ti (thousands of
+  calls); dropped. `qwen3:8b` (no think) was not better than the 4B instruct model (above).
+- Decision (no further prompt tuning, to avoid fitting rules back in): freeze p4 = lane-grouped facts + kinematics +
+  map landmarks, task-only prompt without the `critical_objects` field, model `qwen3:4b-instruct-2507-q4_K_M`
+  (same model as Phase 4, so v5 vs v6 differ only in input / prompt / target choice). Dev offline accuracy 49 %
+  (p3: 53 % on a stricter reference; the difference is within noise of ~90 states). The point of v6 is to measure the
+  model's judgment, not to raise this number with hints.
+
+## Phase 5 test protocol (frozen 2026-10-25, before any run on the test seeds)
+- Test seeds 600–649 (50 per scenario; never used before, also not by Phase 4). Dev seeds were 200–219.
+- Scenarios: nominal; need: stall_mid, stall_exit, slow_exit; no need: stall_past_exit, stall_upstream. 11 s horizon.
+- Methods, all with the same executor v3 (SmoothBypassSkill / FollowSkill, S0 = 10, T_GAP = 1, ENTRY_HOLD = 1):
+  `dt`; `naive` (context-free trigger); `designed` (designer's route-aware rule = answer key, upper reference);
+  `llm5` (the Phase-4 pipeline unchanged: labels + rule prompt v5, executor picks the target);
+  `llm` (v6: facts only, task-only prompt, model returns the target id; Qwen3-4B-instruct, temperature 0).
+- Primary outcomes: success / collision / at-fault / timeout per scenario, and the mean over "need" and "no need".
+  Mechanism outcomes: per-call decision vs the privileged reference; maneuvers started on the injected vehicle;
+  unnecessary maneuvers in "no need" scenarios; invalid-target refusals. Paired exact McNemar tests on the same seeds.
+- No change to prompt, input or executor after this point; any bug fix would be logged and all methods rerun.
+- Test run 1 of `llm,llm5` aborted at episode ~290/600: KeyError in the v6 *scoring* call inside the llm5 branch (the v5
+  pipeline keeps querying on the first metres of the exit road, where the old `_where` still says "ring"). Behaviour of
+  no method was affected; fixed `describe_v6` / `reference` for an ego on the exit road (reference = FOLLOW_POLICY there)
+  and reran both LLM conditions on the full test set. The aborted run's partial file is not used.
+
+## Phase 5 test results (seeds 600–649, 50 per scenario, protocol above) — `results/hazard_test_v6/tables_v6.md`
+Mean success / collision / at-fault / timeout %, "need" = stall_mid, stall_exit, slow_exit; "no need" = stall_past_exit,
+stall_upstream:
+- DT: need 0 / 100 / 100 / 0; no need 94 / 6 / 6 / 0; nominal 94 / 6 / 6 / 0.
+- naive rule + executor: need 45.3 / 35.3 / 34.7 / 19.3; no need 90 / 3 / 3 / 7.
+- LLM v5 pipeline: need 41.3 / 11.3 / 10.0 / 47.3; no need 82 / 3 / 3 / 15 (stall_past_exit 64 % success: its "path"
+  label lists the car behind the exit, the rule prompt then says BYPASS, 48/50 episodes).
+- **LLM v6: need 38.7 / 46.0 / 46.0 / 15.3; no need 92 / 2 / 2 / 6; nominal 96 / 4 / 4 / 0.**
+- designed rule (answer key): need 44.7 / 14.7 / 12.0 / 40.7; no need 94 / 6 / 6 / 0.
+Mechanism:
+- v6 picked the right maneuver AND the injected vehicle in 60 % (stall_mid), 8 % (stall_exit), 0 % (slow_exit) of the
+  calls where the reference intervenes; it intervened in 35–52 % of the calls where the reference does not, mostly on
+  ordinary 16 m/s vehicles (median target speed 16.0 m/s); ≥ 1 maneuver in 50/50 episodes of every scenario, including
+  nominal (1.12 per episode). FOLLOW_VEHICLE on the crawler at the exit: 0/50 episodes (v5: 45/50, designed: 44/50).
+- Attribution of v6 successes: stall_exit 27 successes, 20 of them in episodes where the model never targeted the stalled
+  car (it "bypassed" a normal car, the lane change avoided the stalled car by chance). stall_mid: 9 of 31.
+- Paired McNemar (same seeds), need scenarios: v6 > DT (success 58 vs 0 discordant, p < 1e-17); v6 < naive (success 1 vs 11,
+  p = 0.006; no collision 4 vs 20, p = 0.002); v6 < designed (no collision 5 vs 52, p < 1e-10). No need: v6 = DT
+  (success 4 vs 6, p = 0.75); v6 > v5 (11 vs 1, p = 0.006).
+- 1070 v6 calls, 100 % valid JSON, 0 invalid-target refusals, 0.51 s mean latency (v5: 2354 calls, 1.87 s).
+Conclusion: the v6 gain over DT is explained by the executor plus frequent interventions, not by scene understanding:
+a context-free trigger with the same executor does significantly better where intervention is needed. v5's lower
+collision rate came from the labels + rule prompt (its failure in stall_past_exit shows the judgment sat in the labels).
+
+### 5.4 Supplementary check: a larger pretrained model (offline only, the same 74 dev states as p4)
+- `qwen3:30b-a3b-instruct-2507` (MoE, 3 B active, CPU+GPU, 1.9 s/call): 29.7 % (4B: 48.6 %). Where intervention is
+  needed both 44 %; where it is not, the 30B model intervened in 81 % of states and in stall_past_exit /
+  stall_upstream it targeted the stopped car 20/20 times: it recognises the abnormal object but does not use the
+  route relation (behind the merge point / after the exit). Too slow for the closed loop on this GPU; not run there.

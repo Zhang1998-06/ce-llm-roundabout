@@ -9,22 +9,24 @@ import numpy as np, pandas as pd, torch
 
 ACTIONS = ["LANE_LEFT", "IDLE", "LANE_RIGHT", "FASTER", "SLOWER"]
 URL = "http://127.0.0.1:11434"
-MODELS = {"llm": ("qwen3:4b-instruct-2507-q4_K_M", False), "vlm": ("qwen3-vl:2b-instruct-q4_K_M", True)}
+MODELS = {"llm": (os.environ.get("LLM_MODEL", "qwen3:4b-instruct-2507-q4_K_M"), False), "vlm": ("qwen3-vl:2b-instruct-q4_K_M", True),
+          "llm5": ("qwen3:4b-instruct-2507-q4_K_M", False)}          # llm5 = the Phase-4 pipeline (prompt v5), as a control
 G = None
 G_HAZ = {}
 
 
 def episode(method, scen, seed):
-    import evaluation as E, hazards as H, coc_supervisor as C, bev_renderer as B, highway_env  # noqa
+    import evaluation as E, hazards as H, coc_supervisor as C, bev_renderer as B, rules_v6 as R6, highway_env  # noqa
     global G
     if G is None:
         G = E.load_dt(E.load_cfg())[:3]
     mod, model, c = G
     env = H.make_env(scen); u = env.unwrapped
-    VER = int(os.environ.get("PROMPT_VER", "3"))
+    VER = 5 if method == "llm5" else int(os.environ.get("PROMPT_VER", "3"))
     sup = C.CoCSupervisor(URL, *MODELS[method], version=VER) if method in MODELS else None
-    desc = {1: C.describe, 2: C.describe_v2, 3: C.describe_v3, 4: C.describe_v4, 5: C.describe_v5}[VER]
-    SKV = int(os.environ.get("SKILL_V", "3" if os.environ.get("PROMPT_VER") == "5" else "1"))
+    desc = {1: C.describe, 2: C.describe_v2, 3: C.describe_v3, 4: C.describe_v4, 5: C.describe_v5}.get(VER)
+    SKV = int(os.environ.get("SKILL_V", "3" if VER >= 5 else "1"))
+    ids = {}                                                  # v6: stable vehicle ids for this episode
     skill = {1: lambda: H.BypassSkill(17.0, 6.0, slow_on_access=False), 2: H.SafeBypassSkill, 3: H.SmoothBypassSkill}[SKV]()
     SCALE, MAX = mod.SCALE, mod.MAX_EP_LEN
     HOR = float(os.environ.get("HORIZON_S", "11"))           # sensitivity analysis only; 11 s is the protocol
@@ -77,15 +79,51 @@ def episode(method, scen, seed):
                         skill.start(ob)
                 if skill.active:
                     ae = skill.act(env, a)
+            elif VER == 6 and method in ("llm", "naive", "designed") and C.road_of(u.vehicle)[0] not in ("ring", "south access road"):
+                pass                                                  # v6: supervision ends once the ego has left the ring
+            elif VER == 6 and method in ("llm", "naive", "designed"):
+                # v6: the supervisor (LLM or a control rule) returns a decision AND the target vehicle id; the executor
+                # only checks that the id exists. Target choice and relevance judgment are the supervisor's.
+                state_text, ego6, facts = C.describe_v6(env, ACTIONS[a], ids)
+                r = dict(raw="", consequence="", critical_objects="", latency_s=0.0, valid=True)
+                if method == "llm":
+                    r = C.ask_v6(sup, state_text)
+                    dec, tid = r["decision"], r["target_id"]
+                elif method == "designed":
+                    dec, tid = R6.designed_rule(ego6, facts)
+                else:
+                    dec, tid = R6.naive_rule(env, ego6, facts)
+                ref, ref_id = R6.reference(ego6, facts, G_HAZ.get(id(env)))
+                tgt = next((f["veh"] for f in facts if f["id"] == tid), None)
+                status = "follow_policy"
+                if dec != "FOLLOW_POLICY":
+                    if tgt is None:
+                        status = "rejected_invalid_target"            # executor refusal: logged, DT action kept
+                    else:
+                        skill = H.SmoothBypassSkill() if dec == "BYPASS" else H.FollowSkill()
+                        skill.start(tgt); ae = skill.act(env, a)
+                        status = "executed" if skill.active else "executed_ended_at_once"
+                haz = G_HAZ.get(id(env))
+                decs.append(dict(method=method, scenario=scen, seed=seed, t=t, dt_action=ACTIONS[a], decision=dec,
+                                 target_id=tid, target_is_hazard=bool(tgt is not None and tgt is haz),
+                                 target_speed=float(tgt.speed) if tgt is not None else np.nan,
+                                 ref_decision=ref, ref_target=ref_id, status=status, executed=ACTIONS[ae],
+                                 valid=r["valid"], latency_s=r["latency_s"], consequence=r["consequence"],
+                                 critical_objects=r.get("critical_objects", ""),
+                                 user_message=state_text, raw=r["raw"]))
             elif sup is not None:
                 png = B.render_bev(env) if sup.vision else None
                 state_text = desc(env, ACTIONS[a])
                 r = sup.ask(state_text, png)
                 if VER == 5:
                     pa = C.path_ahead_x(env)
+                    _, ego6, facts = C.describe_v6(env, ACTIONS[a], ids)          # scoring only, not sent to the model
+                    ref, ref_id = R6.reference(ego6, facts, G_HAZ.get(id(env)))
+                    tgt5 = None
                     if r["meta_action"] in ("BYPASS_OBSTACLE", "FOLLOW_VEHICLE") and pa:
                         skill = H.SmoothBypassSkill() if r["meta_action"] == "BYPASS_OBSTACLE" else H.FollowSkill()
-                        skill.start(min(pa[:3], key=lambda x: x[1].speed)[1]); ae = skill.act(env, a)   # the abnormal one
+                        tgt5 = min(pa[:3], key=lambda x: x[1].speed)[1]                    # chosen by the executor (v5)
+                        skill.start(tgt5); ae = skill.act(env, a)
                 elif VER == 4:
                     ts_ = float(getattr(u.vehicle, "target_speed", u.vehicle.speed))
                     if r["meta_action"] == "BYPASS_OBSTACLE":
@@ -102,7 +140,10 @@ def episode(method, scen, seed):
                                  meta_action=r["meta_action"], valid=r["valid"], latency_s=r["latency_s"],
                                  scene=r["scene"], critical_objects=r["critical_objects"],
                                  causal_reasoning=r["causal_reasoning"], abnormal_cause=r.get("abnormal_cause", ""),
-                                 executed=ACTIONS[ae], skill_started=bool(skill.active), user_message=state_text, raw=r.get("raw", "")))
+                                 executed=ACTIONS[ae], skill_started=bool(skill.active), user_message=state_text, raw=r.get("raw", ""),
+                                 **(dict(decision={"BYPASS_OBSTACLE": "BYPASS"}.get(r["meta_action"], r["meta_action"]),
+                                         target_is_hazard=bool(tgt5 is not None and tgt5 is G_HAZ.get(id(env))),
+                                         ref_decision=ref, ref_target=ref_id) if VER == 5 else {})))
         nov += ae != a
         actions[0, -1] = torch.nn.functional.one_hot(torch.tensor(ae), c.act_dim).float()   # history = executed action
         obs, rew, done, trunc, info = env.step(ae); t += 1
@@ -122,7 +163,7 @@ def episode(method, scen, seed):
               collision_at_fault=int(crashed and fault is not False),
               timeout=int(not success and not crashed), avg_speed=float(np.mean(speeds)),
               completion_time=tte if success else np.nan, min_dist=mind, n_steps=t, n_overrides=nov,
-              n_calls=len(decs), mean_latency=float(np.mean([d["latency_s"] for d in decs])) if decs else np.nan,
+              n_calls=len(decs), n_starts=sum(d.get("status") == "executed" or bool(d.get("skill_started")) for d in decs), mean_latency=float(np.mean([d["latency_s"] for d in decs])) if decs else np.nan,
               invalid=sum(not d["valid"] for d in decs))
     return ep, decs
 

@@ -1,0 +1,2 @@
+{"consequence": "Policy slows unnecessarily; traffic flow blocked; delay and risk of collision
+    with inner lane vehicles.", "decision": "BYPASS", "target_id": "4"}

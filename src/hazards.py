@@ -12,6 +12,10 @@ SCENARIOS = {
     "slow_entry": (("se", "ex", 1), 12.0, 3.0),
     "slow_mid": (("ex", "ee", 1), 10.0, 3.0),
     "slow_exit": (("ee", "nx", 1), 8.0, 3.0),
+    # v6 context-contrast scenarios: the same stalled vehicle, but NOT on the ego's route (no intervention needed)
+    "stall_mid_inner": (("ex", "ee", 0), 10.0),     # same ring position as stall_mid, inner lane (the ego stays outer)
+    "stall_past_exit": (("nx", "ne", 1), 9.6),      # outer lane, 9.6 m after the ego's exit (stall_exit mirrored)
+    "stall_upstream": (("sx", "se", 1), 8.0),       # outer lane, before the ego's entry point (behind the ego)
 }
 
 

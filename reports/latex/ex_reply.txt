@@ -1,0 +1,2 @@
+{"consequence": "Policy's idle action risks collision with id 5 at 0.0 m/s in outer lane; gap
+    unsafe.", "decision": "BYPASS", "target_id": "5"}

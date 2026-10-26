@@ -1,0 +1,423 @@
+% Q1 Part 2 and appendix -- CE experiment (roundabout, frozen DT + LLM supervisor)
+% Red (\rev / revblock) = changed or new with respect to the previous version of this experiment (prompt v5);
+% black = unchanged (platform, DT, executor, metric definitions).
+% Model inputs and responses are verbatim from results/hazard_test_v6/decisions_llm_llm5.csv; long lines are wrapped
+% (continuation lines indented by 4 spaces), nothing else is changed.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\newcommand{\rev}[1]{\textcolor{red}{#1}}
+\newenvironment{revblock}{\color{red}}{}
+% one style for all model inputs and responses: same font size and indentation, distinguished by the frame label
+\DefineVerbatimEnvironment{ModelInput}{Verbatim}{fontsize=\footnotesize, xleftmargin=1.5em, frame=single,
+  framesep=2mm, label={\textbf{Model input (user message, verbatim)}}}
+\DefineVerbatimEnvironment{ModelResponse}{Verbatim}{fontsize=\footnotesize, xleftmargin=1.5em, frame=lines,
+  framerule=0.8pt, framesep=2mm, label={\textbf{Model response (raw output, verbatim)}}}
+\DefineVerbatimEnvironment{PromptText}{Verbatim}{fontsize=\footnotesize, xleftmargin=1.5em, frame=single,
+  framesep=2mm, label={\textbf{System prompt (verbatim)}}}
+
+\begin{document}
+
+\section*{Q1 Part 2: Implementation and Evaluation on the Roundabout Scenario}
+
+\subsection*{2.1 \rev{Hypothesis and why the previous evidence was not sufficient}}
+
+\begin{revblock}
+\paragraph{Hypothesis.} A Decision Transformer (DT) trained only on demonstrations of ordinary traffic does not cover
+situations outside its training distribution. A pretrained LLM may already carry the relevant scene understanding,
+traffic common sense and reasoning. We test whether this capability, used at run time as a high-level supervisor of a
+\emph{fixed} DT, lets the DT handle out-of-distribution (OOD) situations without additional policy training and
+without degrading its nominal performance. The supervisor has to judge what a situation means for the ego's own route,
+what the DT's proposed action will lead to, whether to intervene, with which maneuver, and on which vehicle.
+
+\paragraph{What the previous version (prompt v5) could not show.} Checked against the code, the previous version
+(i)~told the model which vehicles were ``in your path'' and labelled them \texttt{STATIONARY} or ``entering the
+single-lane exit ahead of you'', (ii)~gave a rule table with examples that matched the test conditions one to one,
+and (iii)~let the executor, not the model, choose the target (the slowest of the first three path vehicles). In
+addition, every abnormal vehicle in the test set was on the ego's path, so ``intervene whenever something abnormal is
+listed'' was always correct. Its results therefore show that the integrated system works, but they cannot be
+attributed to the model's own understanding.
+
+\paragraph{Minimal changes.} (1)~Two control scenarios with the same stalled car placed where it does \emph{not}
+affect the ego; (2)~a facts-only input without labels; (3)~a prompt that defines the task but contains no rule table
+and no examples; (4)~the model returns the target vehicle id; (5)~mechanism controls and a paired evaluation on new,
+untouched seeds. The DT stays frozen and the executor is unchanged.
+\end{revblock}
+
+\subsection*{2.2 Why the DT needs scene understanding}
+
+The ego is driven by a DT trained on 5409 trajectories of the unmodified \texttt{roundabout-v0} environment
+(highway-env, occupancy-grid observation, five discrete meta-actions at 2\,Hz, 11\,s episodes), in which all traffic
+flows at about 16\,m/s. The checkpoint is frozen and the target return is the one used in training.
+\begin{revblock}
+A stopped or crawling car never occurs in these data. When such a car is on the ego's route, the DT collides in
+100\% of the test episodes (Table~\ref{tab:closed}). The same stopped car placed after the ego's exit or upstream of
+its merge point does not matter: the DT completes 88\% and 100\% of those episodes. Detecting an abnormal object is
+therefore not enough. Whether and how to intervene depends on the object's position relative to the ego's route, its
+motion, the DT's proposed action and the road topology (a single-lane exit cannot be entered in front of a car that
+is already entering it). This is the judgment we expect from the LLM.
+\end{revblock}
+
+\subsection*{2.3 \rev{What the model has to judge}}
+
+\begin{revblock}
+At every policy step (0.5\,s) the model must decide (a)~which vehicles, if any, can affect the part of the road the ego
+will actually drive, (b)~what happens if the DT's proposed action is executed, (c)~whether to keep the DT
+(\texttt{FOLLOW\_POLICY}), pass a vehicle in the other ring lane (\texttt{BYPASS}) or stay behind it without changing
+lanes (\texttt{FOLLOW\_VEHICLE}), and (d)~which vehicle the maneuver refers to. The scenarios are built as minimal
+pairs, each differing in one relation only:
+\begin{itemize}[nosep]
+\item before vs.\ after the exit: stalled car 9.6\,m before (\texttt{stall\_exit}, bypass) or 9.6\,m after the ego's exit
+  in the same lane (\texttt{stall\_past\_exit}, no intervention);
+\item stationary vs.\ crawling at the same place: 0\,m/s (\texttt{stall\_exit}, bypass) vs.\ 3\,m/s, about to enter the
+  single-lane exit (\texttt{slow\_exit}, follow, it cannot be overtaken);
+\item ahead vs.\ behind: stalled car 27.6\,m after the merge point (\texttt{stall\_mid}, bypass) vs.\ 12\,m upstream of
+  it (\texttt{stall\_upstream}, no intervention).
+\end{itemize}
+Nominal traffic is kept as the control for unnecessary interventions.
+\end{revblock}
+
+\subsection*{2.4 \rev{Design of the OOD validation}}
+
+\paragraph{Architecture.} The frozen DT proposes an action at every step. The supervisor either keeps it or starts a
+temporally extended maneuver; a maneuver executor turns the maneuver into actions (rate-limited braking with a
+safe-distance law, lane change only with a speed-dependent gap in the target lane, end of the maneuver once the target
+is 8\,m behind the ego). \rev{The executor only checks that the returned target id exists in the current perception
+list; otherwise it refuses, keeps the DT action and logs the refusal. It no longer selects the target and makes no
+relevance judgment: a maneuver on an irrelevant vehicle is executed and its cost appears in the results.}
+
+\begin{revblock}
+\paragraph{Input (facts only).} Ego road, lane and speed; navigation (where the north exit leaves the ring); the DT's
+proposed action and current target speed; and every vehicle within 50\,m, grouped by road and lane (lane association
+is a perception output), with a stable id, its position along the ring (signed, in the driving direction), its speed
+and, for ring vehicles, the time the ego needs at current speeds to reach its position (computed identically for every
+lane). Map landmarks (\texttt{[YOU]}, \texttt{[YOUR MERGE POINT]}, \texttt{[YOUR EXIT]}) are placed in the same
+coordinate. The input contains no motion-state labels, no ``in your path'' grouping, no exit-zone or predicted-maneuver
+labels, no hazard marker and no scenario name. Since this is a text LLM, the task is scene judgment from structured
+observations, not perception from images.
+
+\paragraph{Prompt (task only).} Road facts, the DT's training limitation, the meaning and execution constraints of the
+three decisions, the statement that every intervention has a cost, and the task: judge the consequence of the DT's
+action for the ego's own route, then decide. No rule table and no examples (full text in Appendix B).
+Output: \texttt{\{"consequence", "decision", "target\_id"\}}; the model is not asked to repeat its input.
+
+\paragraph{Controls (same facts, same executor).}
+\begin{itemize}[nosep]
+\item \textbf{DT}: baseline.
+\item \textbf{Naive trigger}: any vehicle slower than 5\,m/s within 40\,m in front of the ego (straight-line geometry,
+  no lane or route reasoning) $\rightarrow$ \texttt{BYPASS}. Measures what a hand-written avoidance logic alone gives.
+\item \textbf{LLM v5}: the previous pipeline unchanged (labels, rule prompt, executor-chosen target). Measures what a
+  prompt and input that already contain the answer give.
+\item \textbf{LLM v6}: facts-only input, task-only prompt, model-chosen target (the method under test).
+\item \textbf{Designed rule}: the designer's route-aware rule (the answer key). Upper reference for correct decisions
+  with this executor, not a competitor.
+\end{itemize}
+
+\paragraph{Protocol.} Development on seeds 200--219 only (offline single-step checks and one closed-loop pipeline
+check). The input, prompt, model (Qwen3-4B-Instruct-2507, Q4\_K\_M, temperature 0, Ollama on an RTX~3070~Ti) and
+executor were frozen and the protocol was written down before any test run. Test: seeds 600--649, 50 episodes per
+scenario, identical scenarios and seeds for all methods (paired), 11\,s horizon. Outcomes: success, collision,
+at-fault collision (the ego is not at fault only if rear-ended while keeping its lane outside the merge zone),
+timeout, speed, completion time. Mechanism measures: every supervisor call is compared with a privileged reference that
+is never shown to any supervisor (intervene on the injected vehicle while it is in the ego's lane ahead and before the
+exit); maneuvers started on the injected vehicle; unnecessary maneuvers. Paired comparisons use the exact McNemar test.
+A scoring-code bug found after freezing (no effect on any driving decision) was fixed and all methods were rerun; the
+rule controls were identical episode by episode before and after.
+\end{revblock}
+
+\subsection*{2.5 \rev{Results}}
+
+\begin{revblock}
+\begin{table}[h]
+\centering\footnotesize
+\caption{Closed loop on test seeds 600--649 (50 episodes per cell): success / collision / at-fault collision / timeout (\%).
+``Need'': stall\_mid, stall\_exit, slow\_exit; ``no need'': stall\_past\_exit, stall\_upstream.}
+\label{tab:closed}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccccc}
+\toprule
+Method & nominal & stall\_mid & stall\_exit & slow\_exit & stall\_past\_exit & stall\_upstream \\
+\midrule
+DT & 94/6/6/0 & 0/100/100/0 & 0/100/100/0 & 0/100/100/0 & 88/12/12/0 & 100/0/0/0 \\
+Naive trigger & 94/6/6/0 & 66/20/20/14 & 70/6/4/24 & 0/80/80/20 & 80/6/6/14 & 100/0/0/0 \\
+LLM v5 (labels + rules) & 94/6/6/0 & 66/20/20/14 & 58/4/4/38 & 0/10/6/90 & 64/6/6/30 & 100/0/0/0 \\
+\textbf{LLM v6 (facts only)} & 96/4/4/0 & 62/24/24/14 & 54/34/34/12 & 0/80/80/20 & 84/4/4/12 & 100/0/0/0 \\
+Designed rule (answer key) & 94/6/6/0 & 66/20/20/14 & 68/6/4/26 & 0/18/12/82 & 88/12/12/0 & 100/0/0/0 \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\begin{tabular}{lcc}
+\toprule
+Method & mean, need & mean, no need \\
+\midrule
+DT & 0 / 100 / 100 / 0 & 94 / 6 / 6 / 0 \\
+Naive trigger & 45.3 / 35.3 / 34.7 / 19.3 & 90 / 3 / 3 / 7 \\
+LLM v5 (labels + rules) & 41.3 / 11.3 / 10.0 / 47.3 & 82 / 3 / 3 / 15 \\
+\textbf{LLM v6 (facts only)} & 38.7 / 46.0 / 46.0 / 15.3 & 92 / 2 / 2 / 6 \\
+Designed rule (answer key) & 44.7 / 14.7 / 12.0 / 40.7 & 94 / 6 / 6 / 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No method can succeed in slow\_exit within 11\,s (following a 3\,m/s car to the exit takes longer), so there only
+collisions separate the methods.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Decision quality of LLM v6 against the privileged reference, and the first maneuver started on the injected
+vehicle (episodes out of 50; BYPASS/FOLLOW in brackets).}
+\label{tab:dec}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.6cm}cccccc}
+\toprule
+ & stall\_mid & stall\_exit & slow\_exit & stall\_past\_exit & stall\_upstream & nominal \\
+\midrule
+v6: correct decision and target, when the reference intervenes & 60\% & 8\% & 0\% & -- & -- & -- \\
+v6: intervenes when the reference does not & 26\% & 52\% & 49\% & 48\% & 48\% & 35\% \\
+v6: episodes with $\geq$1 maneuver & 50 & 50 & 50 & 50 & 50 & 50 \\
+v6: first maneuver on the injected car & 36 (36/0) & 10 (10/0) & 3 (3/0) & 19 & 15 & 0 \\
+v5: first maneuver on the injected car & 50 (50/0) & 48 (38/10) & 46 (1/45) & 48 & 0 & 0 \\
+Designed: first maneuver on the injected car & 50 (50/0) & 49 (49/0) & 44 (0/44) & 3 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+LLM v6 made 1070 calls (100\% valid JSON, no invalid-target refusal, 0.51\,s mean latency). The median speed of the
+vehicles it targeted unnecessarily was 16.0\,m/s, i.e.\ mostly ordinary traffic. In stall\_exit, 20 of its 27 successes
+came from episodes in which it never targeted the stalled car: it ``bypassed'' a normal car and the resulting lane change
+avoided the stalled car by chance (9 of 31 in stall\_mid). Because a maneuver runs until its target is behind the ego,
+a wrong target also keeps the model from being queried again: in slow\_exit, the last decision of 38 of 50 episodes was
+a maneuver on a non-injected vehicle (29 of them collided).
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Paired comparisons on the same scenarios and seeds (discordant pairs; exact McNemar test).}
+\label{tab:paired}
+\begin{tabular}{llrrr}
+\toprule
+Comparison, scenario group & outcome & v6 better & other better & $p$ \\
+\midrule
+v6 vs DT, need & success & 58 & 0 & $<10^{-17}$ \\
+v6 vs DT, no need & success & 4 & 6 & 0.75 \\
+v6 vs naive, need & success & 1 & 11 & 0.006 \\
+v6 vs naive, need & no collision & 4 & 20 & 0.002 \\
+v6 vs v5, need & no collision & 2 & 54 & $<10^{-13}$ \\
+v6 vs v5, no need & success & 11 & 1 & 0.006 \\
+v6 vs designed, need & no collision & 5 & 52 & $<10^{-10}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Supplementary check with larger models (offline, the same 74 development states).} Qwen3-30B-A3B-Instruct:
+29.7\% correct (4B: 48.6\%). Where intervention is needed both reach 44\%. Where it is not, the 30B model intervened in
+81\% of the states, and in stall\_past\_exit and stall\_upstream it targeted the stopped car in 20 of 20 states: it
+recognises the abnormal object but does not use its relation to the route. Qwen3-8B (no thinking) was not better than
+the 4B model; Qwen3-4B-Thinking needed about 30\,s per call and exhausted a 4096-token budget before answering, which
+rules it out for a 2\,Hz closed loop on this GPU.
+
+\paragraph{A real run (test set, stall\_mid, seed 602).} At $t=1$ (0.5\,s) the DT proposes \texttt{IDLE}. The input
+and the response below are the logged ones; the executor's steps are reproduced by replaying the logged decisions,
+and the replay matches the logged episode.
+\end{revblock}
+
+\begin{ModelInput}[formatcom=\color{red}]
+EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane,
+    speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m
+    past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER
+    and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction,
+    relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 3 at -31 m, 16.0 m/s; [YOUR MERGE POINT at 0
+    m]; id 2 at +15 m, 16.2 m/s; id 5 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 4 at -46 m, 16.2 m/s; id 1 at +8 m, 16.0 m/s; [YOUR EXIT (north exit
+    road) at +55 m]
+- Other roads: none
+\end{ModelInput}
+
+\begin{ModelResponse}[formatcom=\color{red}]
+{"consequence": "Policy's idle action risks collision with id 5 at 0.0 m/s in outer lane; gap
+    unsafe.", "decision": "BYPASS", "target_id": "5"}
+\end{ModelResponse}
+
+\begin{revblock}
+\noindent Id~5 is the injected stalled car (reference: \texttt{BYPASS}, target~5). The executor accepts the id and
+starts the bypass. The DT merges ($t=1$--$2$). At $t=3$ the ego is in the outer lane with the stalled car 32\,m ahead.
+At $t=4$ the gap check passes and \texttt{LANE\_LEFT} is executed while the target speed is lowered to 12.1\,m/s. From
+$t=5$ to $7$ the ego passes the car in the inner lane at 11.7--13.1\,m/s. At $t=9$ the car is 10\,m behind, the maneuver
+ends and control returns to the DT. At $t=11$ the model answers \texttt{FOLLOW\_POLICY}; the ego exits and arrives
+after 7.5\,s without collision. This run is a success and is not typical of v6; Appendix D shows a
+typical failure.
+
+\subsection*{2.6 What the results support}
+\begin{enumerate}[nosep]
+\item \textbf{Supported:} the integrated system (frozen DT + 4B LLM + executor) is far better than the DT where
+  intervention is needed (success 0 $\rightarrow$ 38.7\%, collisions 100 $\rightarrow$ 46\%), and it is not
+  significantly different from the DT in nominal traffic (96 vs.\ 94\%) and where no intervention is needed (92 vs.\ 94\%).
+\item \textbf{Not supported:} that this gain comes from the model's understanding. A context-free trigger with the
+  same executor is significantly better where intervention is needed (success 45.3\%, collisions 35.3\%; $p=0.006$ and
+  $0.002$). v6 chose the correct decision and target in only 8\% (stalled car before the exit) and 0\% (crawler before
+  the exit) of the moments that required it, started a maneuver in every episode including nominal traffic, and most
+  of its successes came from incidental lane changes.
+\item The low collision rate of the previous version came from the labels and the rule prompt. With them, v5 bypassed
+  the stalled car \emph{after} the exit in 48 of 50 episodes (success 64\%), because its path label did not stop at the
+  exit: the judgment sat in the labels, not in the model.
+\item The value that contextual understanding could add in this testbed is the gap between the naive and the designed
+  rule (slow\_exit collisions 80 $\rightarrow$ 18\%; stall\_past\_exit success 80 $\rightarrow$ 88\%). LLM v6 recovered none
+  of it (slow\_exit collisions 80\%, the same as the naive trigger).
+\end{enumerate}
+With the models that run on the available hardware (4B, 8B, 30B-A3B) and a structured, facts-only input, the evidence
+supports the integration effect only; it does \emph{not} show that the LLM's pretrained understanding helps the DT handle
+OOD situations. \textbf{Minimal supplementary validation:} evaluate a stronger model offline on the frozen single-step
+states (the 74 development states plus the states in the test decision logs). Re-run the closed loop for the
+\texttt{llm} condition only if the model is clearly better than the naive trigger where intervention is needed and
+close to the designed rule where it is not; all other conditions can be reused unchanged.
+
+\paragraph{Limitations.} The input is structured (lane association, along-road position and speed come from perception);
+no VLM was tested. A stalled car in the other ring lane could not serve as a clean control, because simulated traffic
+crashes into it and the wreck slides into the ego's lane. Maneuvers are not re-queried while active, so a wrong target
+cannot be cancelled; this applies to all methods but hurts a supervisor that often picks wrong targets most.
+50 episodes per cell resolve only large differences; the conclusions use the significant paired comparisons.
+\end{revblock}
+
+\appendix
+\section*{Appendix}
+
+\subsection*{\rev{A. Scenario definitions}}
+\begin{revblock}
+\begin{table}[h]
+\centering\footnotesize
+\begin{tabular}{l>{\raggedright\arraybackslash}p{7.2cm}ll}
+\toprule
+Scenario & Injected vehicle (lane segment, position) & Intervention needed & DT (test) \\
+\midrule
+nominal & none & no & 94\% success \\
+stall\_mid & outer lane (ex, ee), $s=10$\,m, 27.6\,m after the merge point, 0\,m/s & bypass & 100\% collision \\
+stall\_exit & outer lane (ee, nx), $s=8$\,m, 9.6\,m before the exit, 0\,m/s & bypass & 100\% collision \\
+slow\_exit & same place, 3\,m/s, follows its lane into the exit & follow & 100\% collision \\
+stall\_past\_exit & outer lane (nx, ne), $s=9.6$\,m, 9.6\,m after the exit, 0\,m/s & no & 88\% success \\
+stall\_upstream & outer lane (sx, se), $s=8$\,m, 12\,m upstream of the merge point, 0\,m/s & no & 100\% success \\
+\bottomrule
+\end{tabular}
+\end{table}
+Traffic within 8\,m of the injected vehicle is removed at reset. Tried and excluded: a stalled car in the inner lane
+(becomes a wreck in the ego's lane) and a stalled car 12\,m after the merge point (every method waits at the entry and
+times out).
+\end{revblock}
+
+\subsection*{\rev{B. System prompt (frozen, \texttt{SYSTEM\_V6\_NOCO})}}
+\begin{PromptText}[formatcom=\color{red}]
+You supervise a learned driving policy that controls a car (the EGO) in a two-lane roundabout.
+The policy was trained by imitation only on ordinary flowing traffic in this roundabout. It drives
+    well in such traffic
+(merging, keeping gaps, following other cars), but it may act wrongly in situations it never saw
+    during training.
+At every step you decide whether the policy keeps driving or one of two maneuvers takes over.
+
+ROAD
+- The ring has two lanes (inner and outer). Traffic on the ring drives counter-clockwise. Both ring
+    lanes connect to every exit.
+- Four access roads lead into the ring and four exit roads lead out of it (south, east, north,
+    west). Each of these roads
+  has a single lane; lane changes are only possible on the ring.
+- Speed limit 16 m/s.
+- The ego's route: south access road -> merge into the ring's outer lane -> counter-clockwise along
+    the ring -> leave on
+  the north exit road. Once it has left the ring it does not come back.
+
+INPUT (every 0.5 s): the ego's state, the rest of its route, the policy's proposed action, and every
+    vehicle within
+50 m detected by perception, grouped by road and lane (id, position along the road, speed).
+
+DECISIONS
+- FOLLOW_POLICY: the policy's proposed action is executed.
+- BYPASS with target_id: pass the target vehicle using the other ring lane. The executor changes
+    lane when the gap in that
+  lane is safe, drives past the target and hands control back to the policy once the target is
+    behind the ego.
+  While the ego is still on the access road, the policy merges first and the lane change happens on
+    the ring.
+- FOLLOW_VEHICLE with target_id: stay behind the target vehicle at a safe distance without changing
+    lane, slowing down
+  or stopping as needed. Control returns to the policy when the target is no longer ahead of the
+    ego.
+The maneuvers handle braking and gap checks. They do not judge the traffic situation; that is your
+    job.
+Every intervention has a cost: an unnecessary lane change or slowdown delays the ego and can create
+    conflicts with
+other traffic.
+
+YOUR TASK: judge the situation for the ego's own route, in this order:
+1. consequence: what will happen if the policy's proposed action is executed? Will something block
+    the ego or will it
+   collide with something?
+2. decision and target_id: the decision that lets the ego reach its exit safely and without
+    unnecessary delay.
+
+Return only JSON (each text field at most 25 words):
+{"consequence": "...", "decision": "FOLLOW_POLICY | BYPASS | FOLLOW_VEHICLE", "target_id": <vehicle
+    id or null>}
+\end{PromptText}
+
+\subsection*{\rev{C. Development record}}
+\begin{revblock}
+Offline single-step accuracy on development states (balanced per scenario and reference label), Qwen3-4B unless noted:
+flat vehicle list sorted by distance 41\%; lane-grouped list with an extra ``critical objects'' field 8.7\% (the model
+intervened almost everywhere); plus kinematics without that field 53\% (Qwen3-8B 47\%); plus map landmarks and a
+reference no longer cut at a fixed distance 48.6\% (frozen). No further tuning was done, so that rules or answers would
+not be re-introduced through the prompt. All drafts, their outputs and the reasons for each change are logged in
+\texttt{reports/iteration\_log.md} (Phase~5).
+\end{revblock}
+
+\subsection*{\rev{D. A typical failure (test set, slow\_exit, seed 600, $t=1$)}}
+\begin{ModelInput}[formatcom=\color{red}]
+EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane,
+    speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m
+    past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER
+    and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction,
+    relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -30 m, 13.3 m/s; id 4 at -22 m, 16.1 m/s;
+    [YOUR MERGE POINT at 0 m]; id 3 at +14 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -49 m, 15.9 m/s; id 5 at -21 m, 13.5 m/s; id 2 at -11 m, 13.6 m/s;
+    id 1 at +7 m, 15.7 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none
+\end{ModelInput}
+
+\begin{ModelResponse}[formatcom=\color{red}]
+{"consequence": "Policy slows unnecessarily; traffic flow blocked; delay and risk of collision
+    with inner lane vehicles.", "decision": "BYPASS", "target_id": "4"}
+\end{ModelResponse}
+
+\begin{revblock}
+\noindent The crawling car is not yet within the 50\,m sensing range. Id~4 is an ordinary car 22\,m upstream of the merge
+point. The executor accepts the id and starts the bypass. The maneuver stays active until the end of the episode, so the
+model is not queried again and never sees the crawler. The executor brakes for its lane leader but finds no gap for the
+lane change. At $t=15$ (7.5\,s), at 3.2\,m/s and about 10\,m behind the crawler, the ego has an at-fault collision. On the
+same seed neither the naive trigger nor the designed rule collides.
+\end{revblock}
+
+\subsection*{\rev{E. Code and data}}
+\begin{revblock}
+Repository \url{https://github.com/Zhang1998-06/ce-llm-roundabout}. Scenarios: \texttt{src/hazards.py}; facts-only input,
+prompt and query: \texttt{src/coc\_supervisor.py} (\texttt{perceive\_v6}, \texttt{describe\_v6}, \texttt{SYSTEM\_V6\_NOCO},
+\texttt{ask\_v6}); controls and reference: \texttt{src/rules\_v6.py}; closed loop: \texttt{scripts/run\_hazard.py};
+tables: \texttt{scripts/make\_tables\_v6.py}; replay: \texttt{scripts/replay\_v6.py}; data: \texttt{results/hazard\_test\_v6/}
+(per-episode outcomes and every supervisor call with the full user message and raw response).
+\end{revblock}
+
+\end{document}

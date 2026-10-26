@@ -525,3 +525,204 @@ def describe_v5(env, proposed_name):
             f"{np.linalg.norm(v.position - e.position):.0f} m away on {_where(v)}, speed {v.speed:.1f} m/s"
             + (" (STATIONARY)" if v.speed < 0.5 else "") for v in rest[:4]))
     return "\n".join(L)
+
+
+# ---------------------------------------------------------------- v6: facts-only observation, task-only prompt, model picks the target
+# What changed against v5 (and why): v5 told the model which vehicles are "in your path", labelled them STATIONARY /
+# "entering the single-lane exit", and its prompt mapped each test condition to a maneuver with matching examples; the
+# executor then picked the slowest path vehicle as the target. v6 removes all of that. The observation lists every vehicle
+# near the ego with road, lane, position along the road and speed; deciding whether a vehicle matters for the ego's
+# route, what happens if the policy keeps driving, and which vehicle a maneuver refers to is left to the model.
+DECISIONS_V6 = ("FOLLOW_POLICY", "BYPASS", "FOLLOW_VEHICLE")
+_RING_NODES = {"se", "ex", "ee", "nx", "ne", "wx", "we", "sx"}
+_DIRS = {"s": "south", "e": "east", "n": "north", "w": "west"}
+_ARC_MERGE_TO_EXIT = 24.0 * np.deg2rad(132.0)                    # outer lane, merge point (66 deg) -> north exit (-66 deg)
+
+SYSTEM_V6 = """You supervise a learned driving policy that controls a car (the EGO) in a two-lane roundabout.
+The policy was trained by imitation only on ordinary flowing traffic in this roundabout. It drives well in such traffic
+(merging, keeping gaps, following other cars), but it may act wrongly in situations it never saw during training.
+At every step you decide whether the policy keeps driving or one of two maneuvers takes over.
+
+ROAD
+- The ring has two lanes (inner and outer). Traffic on the ring drives counter-clockwise. Both ring lanes connect to every exit.
+- Four access roads lead into the ring and four exit roads lead out of it (south, east, north, west). Each of these roads
+  has a single lane; lane changes are only possible on the ring.
+- Speed limit 16 m/s.
+- The ego's route: south access road -> merge into the ring's outer lane -> counter-clockwise along the ring -> leave on
+  the north exit road. Once it has left the ring it does not come back.
+
+INPUT (every 0.5 s): the ego's state, the rest of its route, the policy's proposed action, and every vehicle within
+50 m detected by perception, grouped by road and lane (id, position along the road, speed).
+
+DECISIONS
+- FOLLOW_POLICY: the policy's proposed action is executed.
+- BYPASS with target_id: pass the target vehicle using the other ring lane. The executor changes lane when the gap in that
+  lane is safe, drives past the target and hands control back to the policy once the target is behind the ego.
+  While the ego is still on the access road, the policy merges first and the lane change happens on the ring.
+- FOLLOW_VEHICLE with target_id: stay behind the target vehicle at a safe distance without changing lane, slowing down
+  or stopping as needed. Control returns to the policy when the target is no longer ahead of the ego.
+The maneuvers handle braking and gap checks. They do not judge the traffic situation; that is your job.
+Every intervention has a cost: an unnecessary lane change or slowdown delays the ego and can create conflicts with
+other traffic.
+
+YOUR TASK: judge the situation for the ego's own route, in this order:
+1. critical_objects: which vehicles, if any, can affect the ego on the part of the road it will actually drive in the
+   next few seconds, and why.
+2. consequence: what will happen if the policy's proposed action is executed? Will something block the ego or will it
+   collide with something?
+3. decision and target_id: the decision that lets the ego reach its exit safely and without unnecessary delay.
+
+Return only JSON (each text field at most 25 words):
+{"critical_objects": "...", "consequence": "...", "decision": "FOLLOW_POLICY | BYPASS | FOLLOW_VEHICLE", "target_id": <vehicle id or null>}"""
+
+
+def road_of(v):
+    """('ring', 'inner'|'outer') or (road name, None) from the lane index."""
+    a, b, k = v.lane_index
+    if a in _RING_NODES and b in _RING_NODES:
+        return "ring", ("inner" if k == 0 else "outer")
+    for n in (a, b):
+        if len(n) == 3 and n[0] in _DIRS:
+            kind = "access" if n[1] == "e" else "exit"
+            return f"{_DIRS[n[0]]} {kind} road", None
+    if a in _RING_NODES:                                        # ring node -> exit road (e.g. nx -> nxs)
+        return f"{_DIRS[a[0]]} exit road", None
+    return "unknown road", None
+
+
+def _arc(r, th_from, th_to):
+    """Signed arc length along the driving direction (counter-clockwise = decreasing angle here) from th_from to th_to."""
+    return r * ((th_from - th_to + np.pi) % (2 * np.pi) - np.pi)
+
+
+def perceive_v6(env, ids, sense=50.0, max_veh=8):
+    """Ego facts + per-vehicle facts. `ids` (dict, kept per episode) maps vehicles to stable integer ids by first sighting."""
+    u = env.unwrapped
+    e = u.vehicle
+    er, el = road_of(e)
+    th_en, p_en = _entry_angle(env)
+    on_ring = er == "ring"
+    ref_r, ref_th = (float(np.hypot(*e.position)), _ring_angle(e.position)) if on_ring else (24.0, th_en)
+    fwd = np.array([np.cos(e.heading), np.sin(e.heading)])
+    ego = dict(road=er, lane=el, speed=float(e.speed), target_speed=float(getattr(e, "target_speed", e.speed)))
+    if on_ring:
+        ego["exit_ahead"] = float(np.hypot(*e.position)) * ((_ring_angle(e.position) - _TH_NX) % (2 * np.pi))
+    elif er == "south access road":
+        ego["to_merge"] = float(np.linalg.norm(p_en - e.position))
+        ego["exit_ahead"] = _ARC_MERGE_TO_EXIT
+    near = sorted([v for v in u.road.vehicles if v is not e and np.linalg.norm(v.position - e.position) <= sense],
+                  key=lambda v: np.linalg.norm(v.position - e.position))[:max_veh]
+    out = []
+    for v in near:
+        if id(v) not in ids:
+            ids[id(v)] = len(ids) + 1
+        r, ln = road_of(v)
+        f = dict(id=ids[id(v)], veh=v, road=r, lane=ln, speed=float(v.speed), dist=float(np.linalg.norm(v.position - e.position)))
+        if r == "ring":
+            f["along"] = _arc(ref_r, ref_th, _ring_angle(v.position))        # > 0: ahead of the ego / past the merge point
+        elif r == er:
+            f["along"] = float(np.dot(v.position - e.position, fwd))         # same straight road as the ego
+        elif r == "north exit road":
+            f["from_ring"] = float(np.linalg.norm(v.position - u.road.network.get_lane(("nx", "nxs", 0)).position(0, 0)))
+        out.append(f)
+    return ego, out
+
+
+V6_KIN = __import__("os").environ.get("V6_KIN", "1") == "1"            # dev switches; the frozen setting is in the report
+V6_LANDMARK = __import__("os").environ.get("V6_LANDMARK", "1") == "1"
+
+
+def describe_v6(env, proposed_name, ids):
+    """Facts grouped by lane (lane association is a perception output); no relevance, motion-state or route labels."""
+    ego, vs = perceive_v6(env, ids)
+    on_ring = ego["road"] == "ring"
+    L = []
+    if on_ring:
+        L.append(f"EGO: on the ring, {ego['lane']} lane, speed {ego['speed']:.1f} m/s.")
+        L.append(f"ROUTE: your exit, the north exit road, leaves the ring {ego['exit_ahead']:.0f} m ahead of you along the ring.")
+    elif "to_merge" not in ego:                                   # off the ring and not before it (exit road): not queried
+        L.append(f"EGO: on the {ego['road']}, speed {ego['speed']:.1f} m/s.")
+        return "\n".join(L), ego, vs
+    else:
+        L.append(f"EGO: on the south access road, {ego['to_merge']:.0f} m before the point where it merges into the ring's "
+                 f"outer lane, speed {ego['speed']:.1f} m/s.")
+        L.append(f"ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring "
+                 f"{ego['exit_ahead']:.0f} m past your merge point.")
+    L.append(f"POLICY PROPOSES: {proposed_name} (current target speed {ego['target_speed']:.0f} m/s; "
+             "target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).")
+    ref = "you" if on_ring else "your merge point"
+    L.append(f"PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to {ref} "
+             "(+ = ahead/downstream, - = behind/upstream):")
+    groups = []
+    if not on_ring:
+        groups.append(("Your road (south access road), + = ahead of you", [f for f in vs if "along" in f and f["road"] != "ring"]))
+    for ln in ("outer", "inner"):
+        name = f"Ring, {ln} lane" + (" (your lane)" if on_ring and ego["lane"] == ln else
+                                     " (the lane you merge into)" if not on_ring and ln == "outer" else "")
+        groups.append((name, [f for f in vs if f["road"] == "ring" and f["lane"] == ln]))
+    groups.append(("Other roads", [f for f in vs if f["road"] != "ring" and "along" not in f]))
+    for name, fs in groups:
+        if "along" in (fs[0] if fs else {}):
+            fs = sorted([f for f in fs if f["along"] >= 0], key=lambda f: f["along"]) + \
+                 sorted([f for f in fs if f["along"] < 0], key=lambda f: -f["along"])          # ahead near->far, then behind
+        items = []
+        for f in fs:
+            if "along" in f:
+                kin = ""
+                if V6_KIN and on_ring:                              # kinematics at current speeds, same for every lane
+                    dv = ego["speed"] - f["speed"]
+                    if f["along"] > 0 and dv > 0.5:
+                        kin = f" (at current speeds you reach its position in {f['along'] / dv:.1f} s)"
+                    elif f["along"] < 0 and -dv > 0.5:
+                        kin = f" (it reaches your position in {-f['along'] / -dv:.1f} s)"
+                items.append(f"id {f['id']} at {f['along']:+.0f} m, {f['speed']:.1f} m/s{kin}")
+            elif "from_ring" in f:
+                items.append(f"id {f['id']} on the north exit road {f['from_ring']:.0f} m from where it leaves the ring, {f['speed']:.1f} m/s")
+            else:
+                items.append(f"id {f['id']} on the {f['road']}, {f['dist']:.0f} m from you, {f['speed']:.1f} m/s")
+        if V6_LANDMARK and name.startswith("Ring"):                 # 1-D map: upstream -> downstream, with map landmarks
+            marks = [(ego["exit_ahead"], f"[YOUR EXIT (north exit road) at {ego['exit_ahead']:+.0f} m]")]
+            if not on_ring and "outer" in name:
+                marks.append((0.0, "[YOUR MERGE POINT at 0 m]"))
+            if on_ring and ego["lane"] in name:
+                marks.append((0.0, "[YOU at 0 m]"))
+            items = [it for _, it in sorted([(f["along"], it) for f, it in zip(fs, items)] + marks, key=lambda x: x[0])]
+        L.append(f"- {name}: " + ("; ".join(items) if items else "none"))
+    return "\n".join(L), ego, vs
+
+
+SYSTEM_V6_NOCO = (SYSTEM_V6.replace("""1. critical_objects: which vehicles, if any, can affect the ego on the part of the road it will actually drive in the
+   next few seconds, and why.
+2. consequence""", "1. consequence").replace("3. decision and target_id", "2. decision and target_id")
+                  .replace('{"critical_objects": "...", "consequence"', '{"consequence"'))
+
+
+def ask_v6(sup, state_text):
+    """One v6 query. Returns decision, target id, consequence, validity, latency and the raw response."""
+    body = {"model": sup.model, "stream": False, "format": "json", "keep_alive": "60m",
+            "options": {"temperature": 0, "num_predict": 220, "num_ctx": sup.num_ctx},
+            "messages": [{"role": "system", "content": SYSTEM_V6_NOCO if __import__("os").environ.get("V6_CO", "0") == "0" else SYSTEM_V6},
+                         {"role": "user", "content": state_text}]}
+    if "thinking" in sup.model:                                 # reasoning model: thinks first (separate field), then the JSON
+        body["think"] = True
+        body["options"]["num_predict"] = 4096
+    elif "instruct" not in sup.model:
+        body["think"] = False                                   # hybrid models (qwen3:8b): answer directly, as the 4B instruct does
+    t0 = time.time()
+    raw, out, dec, tid, valid, thinking = "", {}, "FOLLOW_POLICY", None, False, ""
+    try:
+        r = requests.post(sup.url, json=body, timeout=180)
+        r.raise_for_status()
+        raw = r.json()["message"]["content"]
+        thinking = r.json()["message"].get("thinking", "")
+        out = json.loads(raw)
+        d = str(out.get("decision", "")).strip().upper()
+        if d in DECISIONS_V6:
+            dec, valid = d, True
+            t = out.get("target_id")
+            tid = int(t) if t not in (None, "", "null") and str(t).lstrip("-").isdigit() else None
+    except Exception as ex:                                     # failure -> keep the DT action
+        out = {"error": str(ex)}
+    return dict(decision=dec, target_id=tid, valid=valid, latency_s=time.time() - t0, raw=raw,
+                consequence=str(out.get("consequence", "")), critical_objects=str(out.get("critical_objects", "")),
+                thinking=thinking)

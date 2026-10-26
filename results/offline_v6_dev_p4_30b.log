@@ -1,0 +1,87 @@
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=5 ref_t=nan |  || Policy maintains speed; no immediate collision, but slow vehicle ahead may cause delay.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy action is safe; no conflicts or blockages expected.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy will merge safely; no conflicts expected.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy continues safely; no immediate conflict, exit is clear.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=3 ref_t=nan |  || Policy's FASTER action may cause a collision with vehicle id 3 ahead in the outer lane.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy action is safe; no obstacles or collisions expected.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy continues normally; no obstacles or conflicts expected.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=3 ref_t=nan |  || Policy action causes ego to maintain speed, but vehicle id 3 is too close ahead, risking collision.
+nominal          ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy action is safe; no collision or blockage expected.
+nominal          ref=FOLLOW_POLICY  llm=BYPASS         tgt=5 ref_t=nan |  || Policy's FASTER action risks collision with vehicle id 5 at -14 m in the outer lane.
+slow_exit        ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy's FASTER action is safe; no conflict imminent.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflicts expected.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=5.0 |  || Policy will merge safely; no conflict at merge or exit.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflict at merge or exit.
+slow_exit        ref=FOLLOW_VEHICLE llm=BYPASS         tgt=3 ref_t=8.0 |  || Policy's SLOWER action risks collision with vehicle id 3 at -4 m, which is close and moving at similar speed.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_VEHICLE tgt=3 ref_t=8.0 |  || Policy will merge into outer ring lane; vehicle id 3 is 1 m ahead at 16 m/s, creating a collision risk.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflict at merge or exit.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=5.0 |  || Policy will merge safely; no conflict at merge or exit.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflict at merge point or exit.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_POLICY  tgt=None ref_t=6.0 |  || Policy will merge safely; no conflicts expected.
+slow_exit        ref=FOLLOW_VEHICLE llm=FOLLOW_VEHICLE tgt=9 ref_t=9.0 |  || Policy's action leads to collision with vehicle id 9 ahead in outer lane.
+stall_exit       ref=FOLLOW_POLICY  llm=BYPASS         tgt=6 ref_t=nan |  || Policy's FASTER action may cause a collision with vehicle id 6 at -8 m in the outer lane.
+stall_exit       ref=BYPASS         llm=FOLLOW_VEHICLE tgt=5 ref_t=5.0 |  || Policy will merge into outer ring lane; vehicle id 5 blocks exit at +55 m.
+stall_exit       ref=BYPASS         llm=BYPASS         tgt=7 ref_t=7.0 |  || Policy will merge into outer ring lane; vehicle id 7 is stopped at exit, blocking the path.
+stall_exit       ref=BYPASS         llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflict at merge or exit.
+stall_exit       ref=BYPASS         llm=BYPASS         tgt=6 ref_t=6.0 |  || Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.
+stall_exit       ref=BYPASS         llm=FOLLOW_POLICY  tgt=None ref_t=5.0 |  || Policy will merge safely; no conflict at merge or exit.
+stall_exit       ref=BYPASS         llm=BYPASS         tgt=3 ref_t=8.0 |  || Policy's SLOWER action risks collision with vehicle id 3 ahead in the outer lane.
+stall_exit       ref=BYPASS         llm=FOLLOW_VEHICLE tgt=9 ref_t=9.0 |  || Policy's FASTER action risks collision with id 9, stopped at +51 m.
+stall_exit       ref=BYPASS         llm=FOLLOW_POLICY  tgt=None ref_t=7.0 |  || Policy will merge safely; no conflict at merge point or exit.
+stall_exit       ref=BYPASS         llm=BYPASS         tgt=9 ref_t=9.0 |  || Policy's action leads to collision with id 9, stopped at +46 m.
+stall_exit       ref=BYPASS         llm=BYPASS         tgt=3 ref_t=8.0 |  || Policy's SLOWER action risks collision with vehicle id 3 ahead in the outer lane.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=6 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 6 stopped at -26 m.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=5 ref_t=nan |  || Policy continues at 16 m/s; no immediate collision, but exit is blocked by stopped vehicle id 5.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=3 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 3 stopped in inner lane.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=4 ref_t=nan |  || Policy continues at 16 m/s; vehicle 4 ahead in your lane is stopped, causing a collision.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=4 ref_t=nan |  || Policy will continue at 16 m/s; ego will collide with id 4 ahead in inner lane.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=4 ref_t=nan |  || Policy continues at 16 m/s; vehicle 4 ahead in outer lane is stopped, causing collision.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_POLICY  tgt=None ref_t=nan |  || Policy continues at 16 m/s; ego will pass exit without turning.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=3 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 3 stopped in inner lane.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=3 ref_t=nan |  || Policy continues at 16 m/s; no immediate collision, but target id 3 ahead may cause conflict at exit.
+stall_mid        ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=6 ref_t=nan |  || Policy continues at 14 m/s; ego will collide with id 6 stopped at -25 m.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=7 ref_t=7.0 |  || Policy's SLOWER action risks collision with id 7, stopped at +28 m on the ring.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=7 ref_t=7.0 |  || Policy's SLOWER action risks collision with id 7, stopped at +28 m on outer ring.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=6 ref_t=6.0 |  || Policy will merge into outer lane; vehicle id 6 is stopped at exit, blocking the path.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=3 ref_t=3.0 |  || Policy will merge into outer lane and collide with id 3 stopped at +28 m.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=4 ref_t=8.0 |  || Policy will slow down, risking collision with vehicle id 4 at -19 m.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=6 ref_t=6.0 |  || Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=8 ref_t=8.0 |  || Policy's SLOWER action risks collision with id 8, stopped at +28 m on outer ring.
+stall_mid        ref=BYPASS         llm=FOLLOW_VEHICLE tgt=5 ref_t=5.0 |  || Policy will merge into outer ring lane; vehicle id 5 blocks exit at +28 m.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=6 ref_t=6.0 |  || Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.
+stall_mid        ref=BYPASS         llm=BYPASS         tgt=6 ref_t=6.0 |  || Policy will merge and drive into the stopped vehicle (id 6) at +28 m, causing a collision.
+stall_past_exit  ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=7 ref_t=nan |  || Ego will collide with id 7, stopped at exit, if policy continues.
+stall_past_exit  ref=FOLLOW_POLICY  llm=BYPASS         tgt=7 ref_t=nan |  || The vehicle at +68 m in outer lane is stopped, blocking your path to the exit.
+stall_past_exit  ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=9 ref_t=nan |  || Ego will collide with id 9, stopped at +42 m, if policy continues.
+stall_past_exit  ref=FOLLOW_POLICY  llm=BYPASS         tgt=6 ref_t=nan |  || Policy action causes collision with id 6, stopped ahead in outer lane.
+stall_past_exit  ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=7 ref_t=nan |  || Policy's action causes collision with id 7 stopped at exit.
+stall_past_exit  ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=8 ref_t=nan |  || Ego will collide with id 8, stopped at +23 m, if policy continues.
+stall_past_exit  ref=FOLLOW_POLICY  llm=BYPASS         tgt=7 ref_t=nan |  || The vehicle at +50 m in the outer lane is stopped, blocking the exit.
+stall_past_exit  ref=FOLLOW_POLICY  llm=BYPASS         tgt=6 ref_t=nan |  || Ego will collide with id 6, stopped at exit, if policy continues.
+stall_past_exit  ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=5 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 5 stopped at +20 m.
+stall_past_exit  ref=FOLLOW_POLICY  llm=BYPASS         tgt=5 ref_t=nan |  || Vehicle id 5 is stopped ahead in outer lane, will block your path to exit.
+stall_past_exit  ref=BYPASS         llm=BYPASS         tgt=8 ref_t=8.0 |  || Ego will collide with id 8, stopped at +9 m, if policy continues.
+stall_past_exit  ref=BYPASS         llm=BYPASS         tgt=9 ref_t=9.0 |  || Ego will collide with vehicle id 9, stopped at +9 m in outer lane.
+stall_upstream   ref=FOLLOW_POLICY  llm=BYPASS         tgt=1 ref_t=nan |  || Policy will merge into outer lane; vehicle id 1 is stopped at merge point, causing collision.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 1 stopped at -43 m.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy's action causes collision with stopped vehicle id 1 ahead in the same lane.
+stall_upstream   ref=FOLLOW_POLICY  llm=BYPASS         tgt=1 ref_t=nan |  || Policy's SLOWER action causes ego to fall behind, risking collision with id 1 stopped at merge point.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 1 stopped at -24 m.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy continues at 16 m/s; ego will collide with id 1 stopped at -62 m.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy action causes collision with stopped vehicle id 1 ahead in your lane.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy's IDLE causes collision with stopped vehicle id 1 ahead in your lane.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy's FASTER action risks collision with id 1 stopped at -12 m in outer lane.
+stall_upstream   ref=FOLLOW_POLICY  llm=FOLLOW_VEHICLE tgt=1 ref_t=nan |  || Policy's FASTER action risks collision with id 1, stopped at merge point.
+                                mean  size
+scenario        ref                       
+nominal         FOLLOW_POLICY    0.6    10
+slow_exit       FOLLOW_POLICY    1.0     1
+                FOLLOW_VEHICLE   0.1    10
+stall_exit      BYPASS           0.3    10
+                FOLLOW_POLICY    0.0     1
+stall_mid       BYPASS           0.8    10
+                FOLLOW_POLICY    0.1    10
+stall_past_exit BYPASS           1.0     2
+                FOLLOW_POLICY    0.0    10
+stall_upstream  FOLLOW_POLICY    0.0    10
+overall 0.297 valid 1.0

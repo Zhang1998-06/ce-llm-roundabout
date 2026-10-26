@@ -1,0 +1,14 @@
+EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane,
+    speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m
+    past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER
+    and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction,
+    relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -30 m, 13.3 m/s; id 4 at -22 m, 16.1 m/s;
+    [YOUR MERGE POINT at 0 m]; id 3 at +14 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -49 m, 15.9 m/s; id 5 at -21 m, 13.5 m/s; id 2 at -11 m, 13.6 m/s;
+    id 1 at +7 m, 15.7 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none

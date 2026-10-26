@@ -1,0 +1,555 @@
+scenario,seed,t,ref,ref_target,decision,target_id,correct,valid,consequence,critical_objects,thinking,latency,user_message
+nominal,202,5,FOLLOW_POLICY,,FOLLOW_VEHICLE,5.0,False,True,"Policy maintains speed; no immediate collision, but slow vehicle ahead may cause delay.",,,27.41193985939026,"EGO: on the ring, outer lane, speed 13.5 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 56 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -33 m, 14.3 m/s (it reaches your position in 41.5 s); id 5 at -13 m, 8.6 m/s; [YOU at 0 m]; id 3 at +8 m, 16.1 m/s; [YOUR EXIT (north exit road) at +56 m]
+- Ring, inner lane: id 6 at -14 m, 14.6 m/s (it reaches your position in 12.1 s); id 4 at +13 m, 15.6 m/s; id 1 at +42 m, 16.0 m/s; [YOUR EXIT (north exit road) at +56 m]
+- Other roads: id 2 on the east exit road, 40 m from you, 13.7 m/s"
+nominal,216,7,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy action is safe; no conflicts or blockages expected.,,,1.4113473892211914,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 33 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 4 at -35 m, 16.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +33 m]
+- Ring, inner lane: id 3 at -13 m, 16.0 m/s; [YOUR EXIT (north exit road) at +33 m]; id 1 at +40 m, 16.2 m/s
+- Other roads: id 2 on the north exit road 2 m from where it leaves the ring, 16.1 m/s"
+nominal,208,1,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy will merge safely; no conflicts expected.,,,1.3737080097198486,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -31 m, 13.2 m/s; id 4 at -19 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +14 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -47 m, 16.1 m/s; id 5 at -23 m, 13.1 m/s; id 3 at -14 m, 14.5 m/s; id 1 at +10 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+nominal,204,9,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,"Policy continues safely; no immediate conflict, exit is clear.",,,1.4015769958496094,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 18 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -38 m, 14.4 m/s; id 3 at -18 m, 11.5 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +18 m]
+- Ring, inner lane: id 4 at -14 m, 15.9 m/s; [YOUR EXIT (north exit road) at +18 m]; id 1 at +42 m, 15.9 m/s
+- Other roads: id 2 on the north exit road 14 m from where it leaves the ring, 15.8 m/s"
+nominal,202,4,FOLLOW_POLICY,,FOLLOW_VEHICLE,3.0,False,True,Policy's FASTER action may cause a collision with vehicle id 3 ahead in the outer lane.,,,1.6838514804840088,"EGO: on the south access road, 4 m before the point where it merges into the ring's outer lane, speed 10.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -37 m, 14.6 m/s; id 5 at -15 m, 11.0 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +2 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -20 m, 14.9 m/s; id 4 at +5 m, 15.6 m/s; id 1 at +33 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 39 m from you, 16.1 m/s"
+nominal,204,5,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy action is safe; no obstacles or collisions expected.,,,1.3839352130889893,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 49 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -37 m, 16.0 m/s; id 3 at -10 m, 12.2 m/s; [YOU at 0 m]; id 2 at +38 m, 15.8 m/s; [YOUR EXIT (north exit road) at +49 m]
+- Ring, inner lane: id 4 at -20 m, 15.9 m/s; id 1 at +36 m, 15.9 m/s; [YOUR EXIT (north exit road) at +49 m]
+- Other roads: none"
+nominal,201,4,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy continues normally; no obstacles or conflicts expected.,,,1.4001212120056152,"EGO: on the ring, outer lane, speed 15.7 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 58 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 4 at -40 m, 16.1 m/s; [YOU at 0 m]; id 2 at +38 m, 16.2 m/s; [YOUR EXIT (north exit road) at +58 m]
+- Ring, inner lane: id 3 at -21 m, 16.0 m/s; id 1 at +38 m, 15.9 m/s; [YOUR EXIT (north exit road) at +58 m]
+- Other roads: none"
+nominal,204,7,FOLLOW_POLICY,,FOLLOW_VEHICLE,3.0,False,True,"Policy action causes ego to maintain speed, but vehicle id 3 is too close ahead, risking collision.",,,1.730609655380249,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 33 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -37 m, 14.5 m/s; id 3 at -14 m, 11.3 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +33 m]
+- Ring, inner lane: id 4 at -17 m, 15.9 m/s; [YOUR EXIT (north exit road) at +33 m]; id 1 at +39 m, 15.9 m/s
+- Other roads: id 2 on the north exit road 2 m from where it leaves the ring, 15.8 m/s"
+nominal,216,11,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy action is safe; no collision or blockage expected.,,,1.4475512504577637,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 4 at -35 m, 16.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]; id 1 at +44 m, 16.2 m/s
+- Ring, inner lane: id 3 at -7 m, 16.0 m/s; [YOUR EXIT (north exit road) at +3 m]
+- Other roads: id 2 on the north exit road 31 m from where it leaves the ring, 16.1 m/s"
+nominal,218,4,FOLLOW_POLICY,,BYPASS,5.0,False,True,Policy's FASTER action risks collision with vehicle id 5 at -14 m in the outer lane.,,,1.8032097816467285,"EGO: on the south access road, 4 m before the point where it merges into the ring's outer lane, speed 10.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -40 m, 15.9 m/s; id 5 at -14 m, 10.9 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +4 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -21 m, 14.5 m/s; id 4 at +4 m, 16.0 m/s; id 1 at +35 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 40 m from you, 15.9 m/s"
+slow_exit,208,5,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy's FASTER action is safe; no conflict imminent.,,,1.4494457244873047,"EGO: on the south access road, 6 m before the point where it merges into the ring's outer lane, speed 6.2 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 8 at -29 m, 15.9 m/s; id 6 at -8 m, 11.7 m/s; [YOUR MERGE POINT at 0 m]; id 4 at +12 m, 16.0 m/s; id 2 at +43 m, 13.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -14 m, 11.6 m/s; id 5 at +2 m, 9.8 m/s; id 3 at +19 m, 13.9 m/s; id 1 at +47 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,206,3,FOLLOW_VEHICLE,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflicts expected.,,,1.3672358989715576,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -44 m, 15.9 m/s; id 4 at -16 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +29 m, 15.9 m/s; id 7 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -28 m, 15.4 m/s; id 3 at -5 m, 15.6 m/s; id 1 at +23 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,201,3,FOLLOW_VEHICLE,5.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.3013248443603516,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -45 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +29 m, 16.2 m/s; id 5 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 3 at -28 m, 16.0 m/s; id 1 at +28 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,205,3,FOLLOW_VEHICLE,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.3196098804473877,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -46 m, 16.2 m/s; id 4 at -15 m, 16.2 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +30 m, 16.1 m/s; id 7 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -28 m, 13.8 m/s; id 3 at -5 m, 16.0 m/s; id 1 at +27 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,218,3,FOLLOW_VEHICLE,8.0,BYPASS,3.0,False,True,"Policy's SLOWER action risks collision with vehicle id 3 at -4 m, which is close and moving at similar speed.",,,1.8021376132965088,"EGO: on the south access road, 10 m before the point where it merges into the ring's outer lane, speed 13.4 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -48 m, 15.9 m/s; id 5 at -20 m, 12.4 m/s; id 3 at -4 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 8 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -29 m, 14.9 m/s; id 4 at -5 m, 16.0 m/s; id 1 at +26 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 38 m from you, 15.9 m/s"
+slow_exit,213,4,FOLLOW_VEHICLE,8.0,FOLLOW_VEHICLE,3.0,False,True,"Policy will merge into outer ring lane; vehicle id 3 is 1 m ahead at 16 m/s, creating a collision risk.",,,1.8958613872528076,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 8.4 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -37 m, 15.6 m/s; id 5 at -14 m, 11.6 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +1 m, 16.0 m/s; id 8 at +51 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -21 m, 14.4 m/s; id 4 at +3 m, 15.5 m/s; id 1 at +33 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 42 m from you, 15.9 m/s"
+slow_exit,217,3,FOLLOW_VEHICLE,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.4494035243988037,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -45 m, 15.9 m/s; id 4 at -14 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +29 m, 16.2 m/s; id 7 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -29 m, 13.5 m/s; id 3 at -6 m, 16.0 m/s; id 1 at +26 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,209,3,FOLLOW_VEHICLE,5.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.3152332305908203,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -47 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +30 m, 16.0 m/s; id 5 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 3 at -30 m, 16.1 m/s; id 1 at +25 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,207,3,FOLLOW_VEHICLE,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge point or exit.,,,1.346818208694458,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -45 m, 15.8 m/s; id 4 at -16 m, 15.8 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +32 m, 16.1 m/s; id 7 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -29 m, 15.7 m/s; id 3 at -3 m, 16.1 m/s; id 1 at +26 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,204,3,FOLLOW_VEHICLE,6.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflicts expected.,,,1.2310099601745605,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 5 at -44 m, 16.0 m/s; id 3 at -16 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +30 m, 15.8 m/s; id 6 at +50 m, 3.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 4 at -30 m, 15.9 m/s; id 1 at +25 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+slow_exit,203,6,FOLLOW_VEHICLE,9.0,FOLLOW_VEHICLE,9.0,True,True,Policy's action leads to collision with vehicle id 9 ahead in outer lane.,,,1.588667869567871,"EGO: on the ring, outer lane, speed 14.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 48 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 8 at -32 m, 16.0 m/s (it reaches your position in 30.0 s); id 6 at -13 m, 8.5 m/s; [YOU at 0 m]; id 3 at +10 m, 15.9 m/s; id 9 at +46 m, 3.0 m/s (at current speeds you reach its position in 3.9 s); [YOUR EXIT (north exit road) at +48 m]
+- Ring, inner lane: id 7 at -16 m, 8.1 m/s; id 5 at -1 m, 8.1 m/s; id 2 at +17 m, 11.6 m/s (at current speeds you reach its position in 5.1 s); id 1 at +45 m, 15.9 m/s; [YOUR EXIT (north exit road) at +48 m]
+- Other roads: none"
+stall_exit,208,5,FOLLOW_POLICY,,BYPASS,6.0,False,True,Policy's FASTER action may cause a collision with vehicle id 6 at -8 m in the outer lane.,,,1.730285406112671,"EGO: on the south access road, 6 m before the point where it merges into the ring's outer lane, speed 6.2 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 8 at -29 m, 15.9 m/s; id 6 at -8 m, 11.7 m/s; [YOUR MERGE POINT at 0 m]; id 4 at +12 m, 16.0 m/s; id 2 at +42 m, 12.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -14 m, 11.6 m/s; id 5 at +2 m, 9.8 m/s; id 3 at +19 m, 13.9 m/s; id 1 at +47 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,209,3,BYPASS,5.0,FOLLOW_VEHICLE,5.0,False,True,Policy will merge into outer ring lane; vehicle id 5 blocks exit at +55 m.,,,1.6619513034820557,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -47 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +30 m, 16.0 m/s; id 5 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 3 at -30 m, 16.1 m/s; id 1 at +25 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,200,3,BYPASS,7.0,BYPASS,7.0,True,True,"Policy will merge into outer ring lane; vehicle id 7 is stopped at exit, blocking the path.",,,1.5714137554168701,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -45 m, 16.1 m/s; id 4 at -16 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 7 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -30 m, 15.0 m/s; id 3 at -6 m, 16.0 m/s; id 1 at +23 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 37 m from you, 15.8 m/s"
+stall_exit,207,3,BYPASS,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.3062407970428467,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -45 m, 15.8 m/s; id 4 at -16 m, 15.8 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +32 m, 16.1 m/s; id 7 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -29 m, 15.7 m/s; id 3 at -3 m, 16.1 m/s; id 1 at +26 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,219,3,BYPASS,6.0,BYPASS,6.0,True,True,"Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.",,,1.5447509288787842,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 5 at -44 m, 15.9 m/s; id 3 at -14 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +31 m, 16.1 m/s; id 6 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 4 at -30 m, 16.0 m/s; id 1 at +24 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,216,3,BYPASS,5.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge or exit.,,,1.3022692203521729,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -43 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +31 m, 16.1 m/s; id 5 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 3 at -27 m, 16.0 m/s; id 1 at +26 m, 16.2 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,218,3,BYPASS,8.0,BYPASS,3.0,False,True,Policy's SLOWER action risks collision with vehicle id 3 ahead in the outer lane.,,,1.607053279876709,"EGO: on the south access road, 10 m before the point where it merges into the ring's outer lane, speed 13.4 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -48 m, 15.9 m/s; id 5 at -20 m, 12.4 m/s; id 3 at -4 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 8 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -29 m, 14.9 m/s; id 4 at -5 m, 16.0 m/s; id 1 at +26 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 38 m from you, 15.9 m/s"
+stall_exit,211,5,BYPASS,9.0,FOLLOW_VEHICLE,9.0,False,True,"Policy's FASTER action risks collision with id 9, stopped at +51 m.",,,1.6578013896942139,"EGO: on the ring, outer lane, speed 8.2 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 62 m ahead of you along the ring.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 8 at -30 m, 15.9 m/s (it reaches your position in 3.8 s); id 6 at -5 m, 9.4 m/s (it reaches your position in 4.5 s); [YOU at 0 m]; id 4 at +11 m, 15.8 m/s; id 9 at +51 m, 0.0 m/s (at current speeds you reach its position in 6.3 s); [YOUR EXIT (north exit road) at +62 m]
+- Ring, inner lane: id 7 at -13 m, 10.5 m/s (it reaches your position in 5.3 s); id 5 at +2 m, 9.0 m/s; id 2 at +20 m, 11.5 m/s; id 1 at +48 m, 16.0 m/s; [YOUR EXIT (north exit road) at +62 m]
+- Other roads: none"
+stall_exit,206,3,BYPASS,7.0,FOLLOW_POLICY,,False,True,Policy will merge safely; no conflict at merge point or exit.,,,1.4642877578735352,"EGO: on the south access road, 7 m before the point where it merges into the ring's outer lane, speed 15.3 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -44 m, 15.9 m/s; id 4 at -16 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +29 m, 15.9 m/s; id 7 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -28 m, 15.4 m/s; id 3 at -5 m, 15.6 m/s; id 1 at +23 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_exit,203,5,BYPASS,9.0,BYPASS,9.0,True,True,"Policy's action leads to collision with id 9, stopped at +46 m.",,,1.6164989471435547,"EGO: on the ring, outer lane, speed 13.5 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 56 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 8 at -34 m, 16.0 m/s (it reaches your position in 13.8 s); id 6 at -10 m, 8.4 m/s; [YOU at 0 m]; id 3 at +9 m, 15.9 m/s; id 9 at +46 m, 0.0 m/s (at current speeds you reach its position in 3.4 s); [YOUR EXIT (north exit road) at +56 m]
+- Ring, inner lane: id 7 at -15 m, 10.3 m/s; id 5 at +0 m, 8.8 m/s (at current speeds you reach its position in 0.1 s); id 2 at +17 m, 11.3 m/s (at current speeds you reach its position in 7.6 s); id 1 at +44 m, 15.9 m/s; [YOUR EXIT (north exit road) at +56 m]
+- Other roads: none"
+stall_exit,202,3,BYPASS,8.0,BYPASS,3.0,False,True,Policy's SLOWER action risks collision with vehicle id 3 ahead in the outer lane.,,,1.6080451011657715,"EGO: on the south access road, 10 m before the point where it merges into the ring's outer lane, speed 13.4 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -44 m, 15.7 m/s; id 5 at -21 m, 12.3 m/s; id 3 at -6 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 8 at +46 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -29 m, 15.7 m/s; id 4 at -4 m, 15.5 m/s; id 1 at +24 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 2 on the east exit road, 38 m from you, 16.1 m/s"
+stall_mid,207,12,FOLLOW_POLICY,,FOLLOW_VEHICLE,6.0,False,True,Policy continues at 16 m/s; ego will collide with id 6 stopped at -26 m.,,,1.7283434867858887,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 143 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -43 m, 7.9 m/s; id 4 at -33 m, 2.0 m/s; id 6 at -26 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +143 m]
+- Ring, inner lane: id 5 at -24 m, 10.3 m/s; id 3 at +20 m, 16.1 m/s; [YOUR EXIT (north exit road) at +143 m]
+- Other roads: id 2 on the east access road, 26 m from you, 0.1 m/s; id 1 on the west exit road, 41 m from you, 15.9 m/s"
+stall_mid,214,11,FOLLOW_POLICY,,FOLLOW_VEHICLE,5.0,False,True,"Policy continues at 16 m/s; no immediate collision, but exit is blocked by stopped vehicle id 5.",,,1.7260653972625732,"EGO: on the ring, inner lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 6 at -35 m, 10.8 m/s; id 5 at -20 m, 0.0 m/s; [YOUR EXIT (north exit road) at +3 m]; id 1 at +36 m, 16.1 m/s
+- Ring, inner lane (your lane): id 4 at -18 m, 10.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]
+- Other roads: id 3 on the east exit road, 28 m from you, 9.5 m/s"
+stall_mid,216,11,FOLLOW_POLICY,,FOLLOW_VEHICLE,3.0,False,True,Policy continues at 16 m/s; ego will collide with id 3 stopped in inner lane.,,,1.552583932876587,"EGO: on the ring, inner lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 5 at -28 m, 15.3 m/s; id 4 at -18 m, 0.0 m/s; [YOUR EXIT (north exit road) at +3 m]; id 1 at +37 m, 16.2 m/s
+- Ring, inner lane (your lane): id 3 at -18 m, 9.8 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]
+- Other roads: id 2 on the east access road, 20 m from you, 0.2 m/s"
+stall_mid,212,12,FOLLOW_POLICY,,FOLLOW_VEHICLE,4.0,False,True,"Policy continues at 16 m/s; vehicle 4 ahead in your lane is stopped, causing a collision.",,,1.7097628116607666,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 147 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -38 m, 14.7 m/s; id 4 at -28 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +147 m]
+- Ring, inner lane: id 3 at -23 m, 10.5 m/s; [YOUR EXIT (north exit road) at +147 m]
+- Other roads: id 2 on the east access road, 27 m from you, 0.1 m/s; id 1 on the west exit road, 39 m from you, 15.9 m/s"
+stall_mid,202,13,FOLLOW_POLICY,,FOLLOW_VEHICLE,4.0,False,True,Policy will continue at 16 m/s; ego will collide with id 4 ahead in inner lane.,,,1.7067272663116455,"EGO: on the ring, inner lane, speed 15.7 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 1 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 8 at -40 m, 7.1 m/s; id 7 at -20 m, 0.0 m/s; [YOUR EXIT (north exit road) at +1 m]
+- Ring, inner lane (your lane): id 6 at -20 m, 8.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +1 m]; id 4 at +25 m, 15.8 m/s
+- Other roads: id 3 on the east access road, 23 m from you, 0.7 m/s; id 5 on the east exit road, 30 m from you, 7.3 m/s; id 1 on the west exit road, 47 m from you, 16.0 m/s"
+stall_mid,216,12,FOLLOW_POLICY,,FOLLOW_VEHICLE,4.0,False,True,"Policy continues at 16 m/s; vehicle 4 ahead in outer lane is stopped, causing collision.",,,1.687366008758545,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 147 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -34 m, 12.5 m/s; id 4 at -28 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +147 m]
+- Ring, inner lane: id 3 at -23 m, 10.2 m/s; [YOUR EXIT (north exit road) at +147 m]
+- Other roads: id 2 on the east access road, 27 m from you, 0.1 m/s; id 1 on the west exit road, 42 m from you, 16.2 m/s"
+stall_mid,219,11,FOLLOW_POLICY,,FOLLOW_POLICY,,True,True,Policy continues at 16 m/s; ego will pass exit without turning.,,,1.5000841617584229,"EGO: on the ring, inner lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 6 at -33 m, 10.7 m/s; id 4 at -18 m, 0.0 m/s; [YOUR EXIT (north exit road) at +3 m]; id 1 at +35 m, 16.0 m/s
+- Ring, inner lane (your lane): id 5 at -19 m, 10.2 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]
+- Other roads: id 2 on the east access road, 20 m from you, 0.2 m/s; id 3 on the east exit road, 28 m from you, 8.3 m/s"
+stall_mid,212,11,FOLLOW_POLICY,,FOLLOW_VEHICLE,3.0,False,True,Policy continues at 16 m/s; ego will collide with id 3 stopped in inner lane.,,,1.5546228885650635,"EGO: on the ring, inner lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 5 at -32 m, 15.9 m/s; id 4 at -17 m, 0.0 m/s; [YOUR EXIT (north exit road) at +3 m]; id 1 at +36 m, 15.9 m/s
+- Ring, inner lane (your lane): id 3 at -19 m, 10.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]
+- Other roads: id 2 on the east access road, 20 m from you, 0.2 m/s"
+stall_mid,207,11,FOLLOW_POLICY,,FOLLOW_VEHICLE,3.0,False,True,"Policy continues at 16 m/s; no immediate collision, but target id 3 ahead may cause conflict at exit.",,,1.7608962059020996,"EGO: on the ring, inner lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 4 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane: id 7 at -34 m, 9.3 m/s; id 4 at -24 m, 4.2 m/s; id 6 at -16 m, 0.0 m/s; [YOUR EXIT (north exit road) at +4 m]; id 1 at +37 m, 15.9 m/s
+- Ring, inner lane (your lane): id 5 at -19 m, 9.9 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +4 m]; id 3 at +15 m, 16.1 m/s
+- Other roads: id 2 on the east access road, 19 m from you, 0.2 m/s"
+stall_mid,215,14,FOLLOW_POLICY,,FOLLOW_VEHICLE,6.0,False,True,Policy continues at 14 m/s; ego will collide with id 6 stopped at -25 m.,,,1.7089674472808838,"EGO: on the ring, outer lane, speed 13.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 139 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 14 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -37 m, 0.9 m/s; id 4 at -32 m, 1.0 m/s; id 6 at -25 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +139 m]
+- Ring, inner lane: id 5 at -21 m, 7.3 m/s; id 3 at +33 m, 14.9 m/s; [YOUR EXIT (north exit road) at +139 m]
+- Other roads: id 2 on the east access road, 25 m from you, 0.0 m/s"
+stall_mid,218,1,BYPASS,7.0,BYPASS,7.0,True,True,"Policy's SLOWER action risks collision with id 7, stopped at +28 m on the ring.",,,1.6933982372283936,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 5 at -32 m, 13.2 m/s; id 3 at -19 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +15 m, 15.9 m/s; id 7 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -46 m, 15.5 m/s; id 4 at -23 m, 16.0 m/s; id 1 at +8 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,202,1,BYPASS,7.0,BYPASS,7.0,True,True,"Policy's SLOWER action risks collision with id 7, stopped at +28 m on outer ring.",,,1.5865914821624756,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 5 at -33 m, 13.3 m/s; id 3 at -21 m, 16.1 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +14 m, 16.1 m/s; id 7 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -46 m, 16.0 m/s; id 4 at -21 m, 15.8 m/s; id 1 at +6 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,215,1,BYPASS,6.0,BYPASS,6.0,True,True,"Policy will merge into outer lane; vehicle id 6 is stopped at exit, blocking the path.",,,1.6122515201568604,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -31 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +14 m, 16.1 m/s; id 6 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -47 m, 16.1 m/s; id 3 at -22 m, 16.0 m/s; id 1 at +5 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,209,1,BYPASS,3.0,BYPASS,3.0,True,True,Policy will merge into outer lane and collide with id 3 stopped at +28 m.,,,1.508697509765625,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): [YOUR MERGE POINT at 0 m]; id 2 at +15 m, 16.0 m/s; id 3 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 4 at -48 m, 16.1 m/s; id 1 at +7 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,208,1,BYPASS,8.0,BYPASS,4.0,False,True,"Policy will slow down, risking collision with vehicle id 4 at -19 m.",,,1.592320203781128,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -31 m, 13.2 m/s; id 4 at -19 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +14 m, 15.9 m/s; id 8 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -47 m, 16.1 m/s; id 5 at -23 m, 13.1 m/s; id 3 at -14 m, 14.5 m/s; id 1 at +10 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,217,1,BYPASS,6.0,BYPASS,6.0,True,True,"Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.",,,1.631859302520752,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -29 m, 15.9 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +14 m, 16.2 m/s; id 6 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -45 m, 15.2 m/s; id 3 at -25 m, 16.0 m/s; id 1 at +8 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,211,1,BYPASS,8.0,BYPASS,8.0,True,True,"Policy's SLOWER action risks collision with id 8, stopped at +28 m on outer ring.",,,1.6852130889892578,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 6 at -30 m, 13.2 m/s; id 4 at -21 m, 15.8 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +15 m, 16.1 m/s; id 8 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 7 at -45 m, 15.8 m/s; id 5 at -24 m, 13.9 m/s; id 2 at -12 m, 13.2 m/s; id 1 at +6 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,214,1,BYPASS,5.0,FOLLOW_VEHICLE,5.0,False,True,Policy will merge into outer ring lane; vehicle id 5 blocks exit at +28 m.,,,1.6423401832580566,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 3 at -32 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +15 m, 16.1 m/s; id 5 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 4 at -46 m, 15.9 m/s; id 1 at +7 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,205,1,BYPASS,6.0,BYPASS,6.0,True,True,"Policy will merge into outer ring lane; vehicle id 6 is stopped at exit, blocking the path.",,,1.5485255718231201,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -30 m, 16.2 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +15 m, 16.1 m/s; id 6 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -44 m, 15.6 m/s; id 3 at -23 m, 16.0 m/s; id 1 at +9 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_mid,200,1,BYPASS,6.0,BYPASS,6.0,True,True,"Policy will merge and drive into the stopped vehicle (id 6) at +28 m, causing a collision.",,,1.621995210647583,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -31 m, 16.0 m/s; [YOUR MERGE POINT at 0 m]; id 2 at +16 m, 15.8 m/s; id 6 at +28 m, 0.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 5 at -47 m, 15.7 m/s; id 3 at -24 m, 16.0 m/s; id 1 at +5 m, 15.9 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_past_exit,217,8,FOLLOW_POLICY,,FOLLOW_VEHICLE,7.0,False,True,"Ego will collide with id 7, stopped at exit, if policy continues.",,,1.5851750373840332,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 25 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 6 at -37 m, 15.6 m/s; id 4 at -14 m, 11.6 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +25 m]; id 7 at +35 m, 0.0 m/s (at current speeds you reach its position in 2.2 s)
+- Ring, inner lane: id 5 at -22 m, 13.2 m/s; id 3 at +9 m, 16.0 m/s; [YOUR EXIT (north exit road) at +25 m]; id 1 at +42 m, 16.0 m/s
+- Other roads: id 2 on the north exit road 6 m from where it leaves the ring, 15.1 m/s"
+stall_past_exit,210,4,FOLLOW_POLICY,,BYPASS,7.0,False,True,"The vehicle at +68 m in outer lane is stopped, blocking your path to the exit.",,,1.6370720863342285,"EGO: on the ring, outer lane, speed 15.7 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 58 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 6 at -42 m, 16.0 m/s; id 4 at -8 m, 13.9 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +58 m]; id 7 at +68 m, 0.0 m/s (at current speeds you reach its position in 4.3 s)
+- Ring, inner lane: id 5 at -23 m, 15.3 m/s; id 3 at +5 m, 16.1 m/s; id 1 at +37 m, 16.0 m/s; [YOUR EXIT (north exit road) at +58 m]
+- Other roads: id 2 on the east exit road, 35 m from you, 15.9 m/s"
+stall_past_exit,203,8,FOLLOW_POLICY,,FOLLOW_VEHICLE,9.0,False,True,"Ego will collide with id 9, stopped at +42 m, if policy continues.",,,1.6760530471801758,"EGO: on the ring, outer lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 33 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 8 at -33 m, 10.8 m/s; id 6 at -18 m, 9.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +33 m]; id 9 at +42 m, 0.0 m/s (at current speeds you reach its position in 2.7 s)
+- Ring, inner lane: id 7 at -21 m, 7.1 m/s; id 5 at -6 m, 8.6 m/s; id 2 at +16 m, 12.3 m/s (at current speeds you reach its position in 4.4 s); [YOUR EXIT (north exit road) at +33 m]; id 1 at +48 m, 15.9 m/s
+- Other roads: id 3 on the east exit road, 12 m from you, 15.9 m/s"
+stall_past_exit,219,9,FOLLOW_POLICY,,BYPASS,6.0,False,True,"Policy action causes collision with id 6, stopped ahead in outer lane.",,,1.5124232769012451,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 18 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -37 m, 14.8 m/s; id 3 at -17 m, 10.5 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +18 m]; id 6 at +27 m, 0.0 m/s (at current speeds you reach its position in 1.7 s)
+- Ring, inner lane: id 4 at -13 m, 16.0 m/s; [YOUR EXIT (north exit road) at +18 m]; id 1 at +40 m, 16.0 m/s
+- Other roads: id 2 on the north exit road 14 m from where it leaves the ring, 14.8 m/s"
+stall_past_exit,200,11,FOLLOW_POLICY,,FOLLOW_VEHICLE,7.0,False,True,Policy's action causes collision with id 7 stopped at exit.,,,1.4780151844024658,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 3 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 6 at -40 m, 13.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +3 m]; id 7 at +13 m, 0.0 m/s (at current speeds you reach its position in 0.8 s); id 1 at +42 m, 15.9 m/s
+- Ring, inner lane: id 5 at -18 m, 14.6 m/s; [YOUR EXIT (north exit road) at +3 m]; id 3 at +14 m, 15.7 m/s
+- Other roads: id 4 on the east exit road, 31 m from you, 10.6 m/s"
+stall_past_exit,213,12,FOLLOW_POLICY,,FOLLOW_VEHICLE,8.0,False,True,"Ego will collide with id 8, stopped at +23 m, if policy continues.",,,1.6690235137939453,"EGO: on the ring, outer lane, speed 15.8 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 14 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -36 m, 6.5 m/s; id 5 at -24 m, 8.9 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +14 m]; id 8 at +23 m, 0.0 m/s (at current speeds you reach its position in 1.5 s)
+- Ring, inner lane: id 6 at +1 m, 14.7 m/s (at current speeds you reach its position in 1.1 s); [YOUR EXIT (north exit road) at +14 m]; id 4 at +33 m, 15.7 m/s
+- Other roads: id 3 on the east exit road, 41 m from you, 9.1 m/s; id 1 on the west exit road, 48 m from you, 15.9 m/s"
+stall_past_exit,206,6,FOLLOW_POLICY,,BYPASS,7.0,False,True,"The vehicle at +50 m in the outer lane is stopped, blocking the exit.",,,1.5868291854858398,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 41 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 6 at -37 m, 15.9 m/s; id 4 at -12 m, 11.6 m/s; [YOU at 0 m]; id 2 at +37 m, 15.9 m/s; [YOUR EXIT (north exit road) at +41 m]; id 7 at +50 m, 0.0 m/s (at current speeds you reach its position in 3.1 s)
+- Ring, inner lane: id 5 at -19 m, 14.2 m/s; id 3 at +7 m, 15.7 m/s; id 1 at +36 m, 16.0 m/s; [YOUR EXIT (north exit road) at +41 m]
+- Other roads: none"
+stall_past_exit,204,5,FOLLOW_POLICY,,BYPASS,6.0,False,True,"Ego will collide with id 6, stopped at exit, if policy continues.",,,1.5447208881378174,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 49 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -37 m, 16.0 m/s; id 3 at -10 m, 12.2 m/s; [YOU at 0 m]; id 2 at +38 m, 15.8 m/s; [YOUR EXIT (north exit road) at +49 m]; id 6 at +58 m, 0.0 m/s (at current speeds you reach its position in 3.7 s)
+- Ring, inner lane: id 4 at -20 m, 15.9 m/s; id 1 at +36 m, 15.9 m/s; [YOUR EXIT (north exit road) at +49 m]
+- Other roads: none"
+stall_past_exit,209,10,FOLLOW_POLICY,,FOLLOW_VEHICLE,5.0,False,True,Policy continues at 16 m/s; ego will collide with id 5 stopped at +20 m.,,,1.7130613327026367,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 10 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 4 at -38 m, 16.1 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +10 m]; id 5 at +20 m, 0.0 m/s (at current speeds you reach its position in 1.2 s)
+- Ring, inner lane: id 3 at -11 m, 16.1 m/s; [YOUR EXIT (north exit road) at +10 m]; id 1 at +43 m, 16.0 m/s
+- Other roads: id 2 on the north exit road 20 m from where it leaves the ring, 15.1 m/s"
+stall_past_exit,209,5,FOLLOW_POLICY,,BYPASS,5.0,False,True,"Vehicle id 5 is stopped ahead in outer lane, will block your path to exit.",,,1.5657134056091309,"EGO: on the ring, outer lane, speed 15.9 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 49 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 4 at -40 m, 16.1 m/s; [YOU at 0 m]; id 2 at +38 m, 16.0 m/s; [YOUR EXIT (north exit road) at +49 m]; id 5 at +58 m, 0.0 m/s (at current speeds you reach its position in 3.7 s)
+- Ring, inner lane: id 3 at -20 m, 16.1 m/s; id 1 at +36 m, 16.0 m/s; [YOUR EXIT (north exit road) at +49 m]
+- Other roads: none"
+stall_past_exit,213,14,BYPASS,8.0,BYPASS,8.0,True,True,"Ego will collide with id 8, stopped at +9 m, if policy continues.",,,1.6121680736541748,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 155 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -47 m, 6.7 m/s; [YOU at 0 m]; id 8 at +9 m, 0.0 m/s (at current speeds you reach its position in 0.6 s); [YOUR EXIT (north exit road) at +155 m]
+- Ring, inner lane: id 6 at +3 m, 15.0 m/s (at current speeds you reach its position in 3.5 s); id 4 at +37 m, 15.3 m/s (at current speeds you reach its position in 59.2 s); [YOUR EXIT (north exit road) at +155 m]
+- Other roads: id 5 on the east exit road, 34 m from you, 9.5 m/s"
+stall_past_exit,211,14,BYPASS,9.0,BYPASS,9.0,True,True,"Ego will collide with vehicle id 9, stopped at +9 m in outer lane.",,,1.5364890098571777,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 155 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 8 at -47 m, 6.1 m/s; id 6 at -32 m, 9.0 m/s; [YOU at 0 m]; id 9 at +9 m, 0.0 m/s (at current speeds you reach its position in 0.6 s); [YOUR EXIT (north exit road) at +155 m]
+- Ring, inner lane: id 7 at -35 m, 6.6 m/s; id 5 at -11 m, 10.3 m/s; id 2 at +26 m, 13.8 m/s (at current speeds you reach its position in 11.6 s); [YOUR EXIT (north exit road) at +155 m]
+- Other roads: none"
+stall_upstream,217,1,FOLLOW_POLICY,,BYPASS,1.0,False,True,"Policy will merge into outer lane; vehicle id 1 is stopped at merge point, causing collision.",,,1.6379313468933105,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 5 at -29 m, 15.9 m/s; id 1 at -12 m, 0.0 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +14 m, 16.2 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -45 m, 15.2 m/s; id 4 at -25 m, 16.0 m/s; id 2 at +8 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_upstream,209,9,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy continues at 16 m/s; ego will collide with id 1 stopped at -43 m.,,,1.710306167602539,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 22 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -44 m, 5.4 m/s; id 1 at -43 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +22 m]
+- Ring, inner lane: id 4 at -9 m, 16.1 m/s; [YOUR EXIT (north exit road) at +22 m]; id 2 at +45 m, 16.0 m/s
+- Other roads: id 3 on the north exit road 14 m from where it leaves the ring, 16.0 m/s"
+stall_upstream,216,6,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy's action causes collision with stopped vehicle id 1 ahead in the same lane.,,,1.5651895999908447,"EGO: on the ring, outer lane, speed 15.6 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 44 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -32 m, 15.3 m/s; id 1 at -24 m, 0.0 m/s; [YOU at 0 m]; id 3 at +42 m, 16.1 m/s; [YOUR EXIT (north exit road) at +44 m]
+- Ring, inner lane: id 4 at -11 m, 16.0 m/s; id 2 at +42 m, 16.2 m/s; [YOUR EXIT (north exit road) at +44 m]
+- Other roads: none"
+stall_upstream,211,1,FOLLOW_POLICY,,BYPASS,1.0,False,True,"Policy's SLOWER action causes ego to fall behind, risking collision with id 1 stopped at merge point.",,,1.7035963535308838,"EGO: on the south access road, 20 m before the point where it merges into the ring's outer lane, speed 12.5 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: SLOWER (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -30 m, 13.2 m/s; id 5 at -21 m, 15.4 m/s; id 1 at -12 m, 0.0 m/s; [YOUR MERGE POINT at 0 m]; id 4 at +15 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 8 at -45 m, 15.8 m/s; id 6 at -24 m, 13.9 m/s; id 3 at -12 m, 13.2 m/s; id 2 at +6 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_upstream,211,7,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy continues at 16 m/s; ego will collide with id 1 stopped at -24 m.,,,1.7696821689605713,"EGO: on the ring, outer lane, speed 15.7 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 40 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 9 at -34 m, 11.9 m/s; id 7 at -29 m, 0.5 m/s; id 1 at -24 m, 0.0 m/s; id 5 at -23 m, 1.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +40 m]
+- Ring, inner lane: id 8 at -19 m, 7.6 m/s; id 6 at -6 m, 8.5 m/s; id 3 at +15 m, 11.8 m/s (at current speeds you reach its position in 3.8 s); [YOUR EXIT (north exit road) at +40 m]; id 2 at +46 m, 16.0 m/s
+- Other roads: none"
+stall_upstream,210,12,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy continues at 16 m/s; ego will collide with id 1 stopped at -62 m.,,,1.7045915126800537,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 155 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 7 at -67 m, 1.5 m/s; id 1 at -62 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +155 m]
+- Ring, inner lane: id 6 at -8 m, 15.5 m/s; id 4 at +22 m, 16.1 m/s; [YOUR EXIT (north exit road) at +155 m]
+- Other roads: id 2 on the west exit road, 44 m from you, 16.0 m/s"
+stall_upstream,201,8,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy action causes collision with stopped vehicle id 1 ahead in your lane.,,,1.5205039978027344,"EGO: on the ring, outer lane, speed 16.0 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 25 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 5 at -43 m, 7.6 m/s; id 1 at -39 m, 0.0 m/s; [YOU at 0 m]; [YOUR EXIT (north exit road) at +25 m]
+- Ring, inner lane: id 4 at -13 m, 16.0 m/s; [YOUR EXIT (north exit road) at +25 m]; id 2 at +43 m, 15.9 m/s
+- Other roads: id 3 on the north exit road 7 m from where it leaves the ring, 16.2 m/s"
+stall_upstream,219,4,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy's IDLE causes collision with stopped vehicle id 1 ahead in your lane.,,,1.5866541862487793,"EGO: on the ring, outer lane, speed 13.7 m/s.
+ROUTE: your exit, the north exit road, leaves the ring 62 m ahead of you along the ring.
+POLICY PROPOSES: IDLE (current target speed 16 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to you (+ = ahead/downstream, - = behind/upstream):
+- Ring, outer lane (your lane): id 6 at -37 m, 15.9 m/s (it reaches your position in 17.3 s); id 4 at -12 m, 7.3 m/s; id 1 at -8 m, 0.0 m/s; [YOU at 0 m]; id 3 at +43 m, 16.1 m/s; [YOUR EXIT (north exit road) at +62 m]
+- Ring, inner lane: id 5 at -21 m, 16.0 m/s (it reaches your position in 9.4 s); id 2 at +37 m, 16.0 m/s; [YOUR EXIT (north exit road) at +62 m]
+- Other roads: none"
+stall_upstream,214,0,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,Policy's FASTER action risks collision with id 1 stopped at -12 m in outer lane.,,,1.6743202209472656,"EGO: on the south access road, 24 m before the point where it merges into the ring's outer lane, speed 8.0 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 4 at -39 m, 16.0 m/s; id 1 at -12 m, 0.0 m/s; [YOUR MERGE POINT at 0 m]; id 3 at +7 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 2 at -2 m, 16.1 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: none"
+stall_upstream,210,3,FOLLOW_POLICY,,FOLLOW_VEHICLE,1.0,False,True,"Policy's FASTER action risks collision with id 1, stopped at merge point.",,,1.6030542850494385,"EGO: on the south access road, 8 m before the point where it merges into the ring's outer lane, speed 10.8 m/s.
+ROUTE: merge into the ring's outer lane; your exit, the north exit road, leaves the ring 55 m past your merge point.
+POLICY PROPOSES: FASTER (current target speed 8 m/s; target speed levels 0 / 8 / 16 m/s; SLOWER and FASTER change the level, LANE_LEFT = towards the inner lane).
+PERCEPTION, vehicles within 50 m. Ring positions are along the ring in the driving direction, relative to your merge point (+ = ahead/downstream, - = behind/upstream):
+- Your road (south access road), + = ahead of you: none
+- Ring, outer lane (the lane you merge into): id 7 at -47 m, 16.0 m/s; id 5 at -16 m, 12.1 m/s; id 1 at -11 m, 0.0 m/s; [YOUR MERGE POINT at 0 m]; [YOUR EXIT (north exit road) at +55 m]
+- Ring, inner lane: id 6 at -30 m, 15.7 m/s; id 4 at -4 m, 16.1 m/s; id 2 at +27 m, 16.0 m/s; [YOUR EXIT (north exit road) at +55 m]
+- Other roads: id 3 on the east exit road, 36 m from you, 15.9 m/s"
