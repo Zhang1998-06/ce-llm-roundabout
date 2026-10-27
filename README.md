@@ -122,6 +122,7 @@ First-version tables: [`results/hazard_test/final_tables.md`](results/hazard_tes
 | `scripts/run_hazard.py` | Closed-loop evaluation: methods `dt, acc, oracle, llm, vlm` (+ `rule, skill, follow`); at-fault classification; logs every LLM call with the full user message and raw response |
 | `scripts/make_tables_v6.py`, `scripts/offline_v6.py`, `scripts/replay_v6.py`, `scripts/build_complete_report.py` | v6 tables, offline dev check, step replay of a logged episode, assembly of the complete report |
 | `scripts/make_ood_scenario_figure.py` | Figure of the six OOD scenarios (stall/slow x entry/mid/exit), drawn from the seed-500 simulator states → `reports/figures/roundabout_ood_scenarios.{pdf,jpg}` |
+| `scripts/make_ood_scenario_screenshots.py` | Same six scenarios as frames of highway-env's own renderer (only a circle overlaid) → `reports/figures/roundabout_ood_scenarios_highway_env.{pdf,jpg}`, raw frames in `reports/figures/highway_env_raw/` |
 | `scripts/make_final_tables_v5.py`, `scripts/make_final_tables.py` | Build the v5 / v4 result tables |
 | `scripts/offline_v5.py` | Offline single-step accuracy check of prompt v5 |
 | `scripts/build_offline_set.py`, `scripts/offline_eval.py` | Offline single-step decision test set used to check prompts before closed-loop runs |
@@ -152,6 +153,7 @@ PROMPT_VER=6 METHODS=llm,llm5 SCEN=$S6 SEEDS=600-649 TAG=test_v6 NP=3 python scr
 python scripts/make_tables_v6.py results/hazard_test_v6
 python scripts/replay_v6.py stall_mid 602          # step-by-step replay of one logged episode
 python scripts/make_ood_scenario_figure.py 500    # scenario figure (reports/figures/)
+python scripts/make_ood_scenario_screenshots.py 500  # same scenarios, highway-env renderer frames
 
 # v5 (previous)
 S=nominal,stall_entry,stall_mid,stall_exit,slow_entry,slow_mid,slow_exit
